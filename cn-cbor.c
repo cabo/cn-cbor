@@ -75,8 +75,8 @@ struct parse_buf {
 };
 
 #define TAKE(pos, ebuf, n, stmt)                \
-  if (n > (ebuf - pos))                         \
-    CN_CBOR_FAIL(CN_CBOR_ERR_OUT_OF_DATA);                \
+  if (n > (unsigned)(ebuf - pos))                         \
+    CN_CBOR_FAIL(CN_CBOR_ERR_OUT_OF_DATA);      \
   stmt;                                         \
   pos += n;
 
@@ -118,10 +118,6 @@ again:
   }
   parent->last_child = cb;
   parent->length++;
-
-  cn_cbor *it;
-  cn_cbor *it2;
-  uint64_t i;
 
   switch (ai) {
   case AI_1: TAKE(pos, ebuf, 1, val = ntoh8p(pos)) ; break;
@@ -220,8 +216,8 @@ fail:
 }
 
 const cn_cbor* cn_cbor_decode(const char* buf, size_t len, cn_cbor_errback *errp) {
-  cn_cbor catcher = {CN_CBOR_INVALID};
-  struct parse_buf pb = {(unsigned char *)buf, (unsigned char *)buf+len};
+  cn_cbor catcher = {CN_CBOR_INVALID, 0, {0}, 0, 0, 0, 0, 0};
+  struct parse_buf pb = {(unsigned char *)buf, (unsigned char *)buf+len, CN_CBOR_NO_ERROR};
   cn_cbor* ret = decode_item(&pb, &catcher);
   if (ret) {
     ret->parent = 0;            /* mark as top node */
@@ -230,7 +226,7 @@ const cn_cbor* cn_cbor_decode(const char* buf, size_t len, cn_cbor_errback *errp
       catcher.first_child->parent = 0;
       cn_cbor_free(catcher.first_child);
     }
-  fail:
+  //fail:
     if (errp) {
       errp->err = pb.err;
       errp->pos = pb.buf - (unsigned char *)buf;

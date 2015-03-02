@@ -80,7 +80,7 @@ done:
 }
 
 
-char *err_name[] = {
+const char *err_name[] = {
   "CN_CBOR_NO_ERROR",
   "CN_CBOR_ERR_OUT_OF_DATA",
   "CN_CBOR_ERR_NOT_ALL_DATA_CONSUMED",
@@ -92,7 +92,7 @@ char *err_name[] = {
   "CN_CBOR_ERR_OUT_OF_MEMORY",
 };
 
-void cn_cbor_decode_test(char *buf, int len) {
+static void cn_cbor_decode_test(const char *buf, int len) {
   struct cn_cbor_errback back;
   const cn_cbor *ret = cn_cbor_decode(buf, len, &back);
   if (ret)

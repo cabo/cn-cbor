@@ -1,5 +1,6 @@
 # enable this for iphone builds
 #CFLAGS = -I /Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS5.0.sdk/usr/include -arch armv7 -Os
+CFLAGS = -Wall -Wextra -Wno-unknown-pragmas -Werror-implicit-function-declaration -Werror -Wno-unused-parameter -Wdeclaration-after-statement -Wwrite-strings -Wstrict-prototypes -Wmissing-prototypes
 
 all: cntest
 
@@ -8,7 +9,7 @@ test: cntest
 	-diff new.out expected.out
 
 cntest: test.c cbor.h cn-cbor.h cn-cbor.c
-	clang cn-cbor.c test.c -o cntest
+	clang $(CFLAGS) cn-cbor.c test.c -o cntest
 
 size: cn-cbor.o
 	size cn-cbor.o
