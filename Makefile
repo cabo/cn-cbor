@@ -1,6 +1,6 @@
-# enable this for iphone builds
+# enable this for armv7 builds, lazily using iPhone SDK
 #CFLAGS = -I /Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS5.0.sdk/usr/include -arch armv7 -Os
-CFLAGS = -Wall -Wextra -Wno-unknown-pragmas -Werror-implicit-function-declaration -Werror -Wno-unused-parameter -Wdeclaration-after-statement -Wwrite-strings -Wstrict-prototypes -Wmissing-prototypes
+CFLAGS = -Os -Wall -Wextra -Wno-unknown-pragmas -Werror-implicit-function-declaration -Werror -Wno-unused-parameter -Wdeclaration-after-statement -Wwrite-strings -Wstrict-prototypes -Wmissing-prototypes
 
 all: cntest
 
