@@ -11,7 +11,7 @@
 static char* load_file(const char* filepath, char **end) {
   struct stat st;
   if (stat(filepath, &st)==-1) {
-    // ERROR("can't find file", filepath);
+    ERROR("can't find file", filepath);
     return 0;
   }
   int fd=open(filepath, O_RDONLY);

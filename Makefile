@@ -1,5 +1,6 @@
-# enable this for iphone builds
+# enable this for armv7 builds, lazily using iPhone SDK
 #CFLAGS = -I /Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS5.0.sdk/usr/include -arch armv7 -Os
+CFLAGS = -Os
 
 all: cntest
 
