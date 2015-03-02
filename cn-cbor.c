@@ -75,7 +75,7 @@ struct parse_buf {
 };
 
 #define TAKE(pos, ebuf, n, stmt)                \
-  if (n > (unsigned)(ebuf - pos))                         \
+  if (n > (size_t)(ebuf - pos))                 \
     CN_CBOR_FAIL(CN_CBOR_ERR_OUT_OF_DATA);      \
   stmt;                                         \
   pos += n;
