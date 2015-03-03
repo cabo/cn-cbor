@@ -258,43 +258,67 @@ const cn_cbor* cn_cbor_decode(const char* buf, size_t len, cn_cbor_errback *errp
 }
 
 const cn_cbor* cn_cbor_mapget_int(const cn_cbor* cb, int key) {
-    cn_cbor* cp;
-    assert(cb);
-    for (cp = cb->first_child; cp && cp->next; cp = cp->next->next) {
-        switch(cp->type) {
-        case CN_CBOR_UINT:
-            if (cp->v.uint == (unsigned long)key) {
-                return cp->next;
-            }
-        case CN_CBOR_INT:
-            if (cp->v.sint == (long)key) {
-                return cp->next;
-            }
-            break;
-        default:
-            ; // skip non-integer keys
-        }
+  cn_cbor* cp;
+  assert(cb);
+  for (cp = cb->first_child; cp && cp->next; cp = cp->next->next) {
+    switch(cp->type) {
+    case CN_CBOR_UINT:
+      if (cp->v.uint == (unsigned long)key) {
+        return cp->next;
+      }
+    case CN_CBOR_INT:
+      if (cp->v.sint == (long)key) {
+        return cp->next;
+      }
+      break;
+    default:
+      ; // skip non-integer keys
     }
-    return NULL;
+  }
+  return NULL;
 }
 
 const cn_cbor* cn_cbor_mapget_string(const cn_cbor* cb, const char* key) {
-    cn_cbor *cp;
-    assert(cb);
-    assert(key);
-    for (cp = cb->first_child; cp && cp->next; cp = cp->next->next) {
-        switch(cp->type) {
-        case CN_CBOR_TEXT:
-        case CN_CBOR_BYTES:
-            if (strncmp(key, cp->v.str, cp->length) == 0) {
-                return cp->next;
-            }
-            break;
-        default:
-            ; // skip non-string keys
-        }
+  cn_cbor *cp;
+  int keylen;
+  assert(cb);
+  assert(key);
+  keylen = strlen(key);
+  for (cp = cb->first_child; cp && cp->next; cp = cp->next->next) {
+    switch(cp->type) {
+    case CN_CBOR_TEXT:
+      if (keylen != cp->length) {
+        continue;
+      }
+      if (strncmp(key, cp->v.str, cp->length) == 0) {
+        return cp->next;
+      }
+      break;
+    case CN_CBOR_BYTES:
+      if (keylen != cp->length) {
+        continue;
+      }
+      if (memcmp(key, cp->v.str, keylen) == 0) {
+        return cp->next;
+      }
+    default:
+      ; // skip non-string keys
     }
-    return NULL;
+  }
+  return NULL;
+}
+
+const cn_cbor* cn_cbor_index(const cn_cbor* cb, int idx) {
+  cn_cbor *cp;
+  int i = 0;
+  assert(cb);
+  for (cp = cb->first_child; cp; cp = cp->next) {
+    if (i == idx) {
+      return cp;
+    }
+    i++;
+  }
+  return NULL;
 }
 
 #ifdef  __cplusplus
