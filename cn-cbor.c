@@ -17,6 +17,7 @@ extern "C" {
 #include <arpa/inet.h>
 
 #include "cn-cbor.h"
+#include "cbor.h"
 
 // can be redefined, e.g. for pool allocation
 #ifndef CN_CBOR_CALLOC

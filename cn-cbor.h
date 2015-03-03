@@ -8,9 +8,6 @@ extern "C" {
 } /* Duh. */
 #endif
 
-/* protocol constants: */
-#include "cbor.h"
-
 typedef enum cn_cbor_type {
   CN_CBOR_NULL,
   CN_CBOR_FALSE,   CN_CBOR_TRUE,
