@@ -58,6 +58,8 @@ typedef enum cn_cbor_error {
   CN_CBOR_ERR_OUT_OF_MEMORY,
 } cn_cbor_error;
 
+extern const char *cn_cbor_error_str[];
+
 typedef struct cn_cbor_errback {
   int pos;
   cn_cbor_error err;

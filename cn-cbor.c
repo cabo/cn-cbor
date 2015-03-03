@@ -14,6 +14,8 @@ extern "C" {
 #include <assert.h>
 #include <math.h>
 
+#include <arpa/inet.h>
+
 #include "cn-cbor.h"
 
 // can be redefined, e.g. for pool allocation
@@ -23,6 +25,18 @@ extern "C" {
 #endif
 
 #define CN_CBOR_FAIL(code) do { pb->err = code;  goto fail; } while(0)
+
+ const char *cn_cbor_error_str[] = {
+  "CN_CBOR_NO_ERROR",
+  "CN_CBOR_ERR_OUT_OF_DATA",
+  "CN_CBOR_ERR_NOT_ALL_DATA_CONSUMED",
+  "CN_CBOR_ERR_ODD_SIZE_INDEF_MAP",
+  "CN_CBOR_ERR_BREAK_OUTSIDE_INDEF",
+  "CN_CBOR_ERR_MT_UNDEF_FOR_INDEF",
+  "CN_CBOR_ERR_RESERVED_AI",
+  "CN_CBOR_ERR_WRONG_NESTING_IN_INDEF_STRING",
+  "CN_CBOR_ERR_OUT_OF_MEMORY"
+};
 
 void cn_cbor_free(const cn_cbor* cb) {
   cn_cbor* p = (cn_cbor*) cb;
@@ -84,8 +98,22 @@ static cn_cbor *decode_item (struct parse_buf *pb, cn_cbor* top_parent) {
   unsigned char *pos = pb->buf;
   unsigned char *ebuf = pb->ebuf;
   cn_cbor* parent = top_parent;
+  int ib;
+  unsigned int mt;
+  int ai;
+  uint64_t val;
+  cn_cbor* cb = NULL;
+  union {
+    float f;
+    uint32_t u;
+  } u32;
+  union {
+    double d;
+    uint64_t u;
+  } u64;
+
 again:
-  TAKE(pos, ebuf, 1, int ib = ntoh8p(pos) );
+  TAKE(pos, ebuf, 1, ib = ntoh8p(pos) );
   if (ib == IB_BREAK) {
     if (!(parent->flags & CN_CBOR_FL_INDEF))
       CN_CBOR_FAIL(CN_CBOR_ERR_BREAK_OUTSIDE_INDEF);
@@ -100,11 +128,11 @@ again:
     }
     goto complete;
   }
-  unsigned int mt = ib >> 5;
-  int ai = ib & 0x1f;
-  uint64_t val = ai;
+  mt = ib >> 5;
+  ai = ib & 0x1f;
+  val = ai;
 
-  cn_cbor* cb = CN_CBOR_CALLOC();
+  cb = CN_CBOR_CALLOC();
   if (!cb)
     CN_CBOR_FAIL(CN_CBOR_ERR_OUT_OF_MEMORY);
 
@@ -166,19 +194,11 @@ again:
     case AI_2: cb->type = CN_CBOR_DOUBLE; cb->v.dbl = decode_half(val); break;
     case AI_4:
       cb->type = CN_CBOR_DOUBLE;
-      union {
-        float f;
-        uint32_t u;
-      } u32;
       u32.u = val;
       cb->v.dbl = u32.f;
       break;
     case AI_8:
       cb->type = CN_CBOR_DOUBLE;
-      union {
-        double d;
-        uint64_t u;
-      } u64;
       u64.u = val;
       cb->v.dbl = u64.d;
       break;
@@ -216,24 +236,64 @@ fail:
 }
 
 const cn_cbor* cn_cbor_decode(const char* buf, size_t len, cn_cbor_errback *errp) {
-  cn_cbor catcher = {CN_CBOR_INVALID, 0, {0}, 0, 0, 0, 0, 0};
+  cn_cbor catcher = {CN_CBOR_INVALID, 0, {0}, 0, NULL, NULL, NULL, NULL};
   struct parse_buf pb = {(unsigned char *)buf, (unsigned char *)buf+len, CN_CBOR_NO_ERROR};
   cn_cbor* ret = decode_item(&pb, &catcher);
-  if (ret) {
-    ret->parent = 0;            /* mark as top node */
+  if (ret != NULL) {
+    /* mark as top node */
+    ret->parent = NULL;
   } else {
     if (catcher.first_child) {
       catcher.first_child->parent = 0;
       cn_cbor_free(catcher.first_child);
     }
-  //fail:
     if (errp) {
       errp->err = pb.err;
       errp->pos = pb.buf - (unsigned char *)buf;
     }
-    return 0;
+    return NULL;
   }
   return ret;
+}
+
+const cn_cbor* cn_cbor_mapget_int(const cn_cbor* cb, int key) {
+    cn_cbor* cp;
+    assert(cb);
+    for (cp = cb->first_child; cp && cp->next; cp = cp->next->next) {
+        switch(cp->type) {
+        case CN_CBOR_UINT:
+            if (cp->v.uint == (unsigned long)key) {
+                return cp->next;
+            }
+        case CN_CBOR_INT:
+            if (cp->v.sint == (long)key) {
+                return cp->next;
+            }
+            break;
+        default:
+            ; // skip non-integer keys
+        }
+    }
+    return NULL;
+}
+
+const cn_cbor* cn_cbor_mapget_string(const cn_cbor* cb, const char* key) {
+    cn_cbor *cp;
+    assert(cb);
+    assert(key);
+    for (cp = cb->first_child; cp && cp->next; cp = cp->next->next) {
+        switch(cp->type) {
+        case CN_CBOR_TEXT:
+        case CN_CBOR_BYTES:
+            if (strncmp(key, cp->v.str, cp->length) == 0) {
+                return cp->next;
+            }
+            break;
+        default:
+            ; // skip non-string keys
+        }
+    }
+    return NULL;
 }
 
 #ifdef  __cplusplus
