@@ -9,7 +9,7 @@ test: cntest
 	-diff new.out expected.out
 
 cntest: test.c cbor.h cn-cbor.h cn-cbor.c
-	clang $(CFLAGS) cn-cbor.c test.c -o cntest
+	clang $(CFLAGS) cn-cbor.c cn-error.c test.c -o cntest
 
 size: cn-cbor.o
 	size cn-cbor.o
