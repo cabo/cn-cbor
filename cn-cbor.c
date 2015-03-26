@@ -234,6 +234,7 @@ const cn_cbor* cn_cbor_decode(const char* buf, size_t len, cn_cbor_errback *errp
       catcher.first_child->parent = 0;
       cn_cbor_free(catcher.first_child);
     }
+  //fail:
     if (errp) {
       errp->err = pb.err;
       errp->pos = pb.buf - (unsigned char *)buf;
