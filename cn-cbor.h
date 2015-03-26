@@ -8,9 +8,6 @@ extern "C" {
 } /* Duh. */
 #endif
 
-/* protocol constants: */
-#include "cbor.h"
-
 typedef enum cn_cbor_type {
   CN_CBOR_NULL,
   CN_CBOR_FALSE,   CN_CBOR_TRUE,
@@ -57,6 +54,8 @@ typedef enum cn_cbor_error {
   CN_CBOR_ERR_WRONG_NESTING_IN_INDEF_STRING,
   CN_CBOR_ERR_OUT_OF_MEMORY,
 } cn_cbor_error;
+
+extern const char *cn_cbor_error_str[];
 
 typedef struct cn_cbor_errback {
   int pos;
