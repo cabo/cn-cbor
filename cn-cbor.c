@@ -14,8 +14,6 @@ extern "C" {
 #include <assert.h>
 #include <math.h>
 
-#include <arpa/inet.h>
-
 #include "cn-cbor.h"
 #include "cbor.h"
 
@@ -91,7 +89,7 @@ static cn_cbor *decode_item (struct parse_buf *pb, cn_cbor* top_parent) {
   unsigned int mt;
   int ai;
   uint64_t val;
-  cn_cbor* cb = NULL;
+  cn_cbor* cb;
   union {
     float f;
     uint32_t u;

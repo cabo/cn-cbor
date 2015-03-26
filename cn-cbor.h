@@ -65,7 +65,7 @@ typedef struct cn_cbor_errback {
 const cn_cbor* cn_cbor_decode(const char* buf, size_t len, cn_cbor_errback *errp);
 const cn_cbor* cn_cbor_mapget_string(const cn_cbor* cb, const char* key);
 const cn_cbor* cn_cbor_mapget_int(const cn_cbor* cb, int key);
-const cn_cbor* cn_cbor_index(const cn_cbor* cb, int idx);
+const cn_cbor* cn_cbor_index(const cn_cbor* cb, unsigned int idx);
 
 const cn_cbor* cn_cbor_alloc(cn_cbor_type t);
 void cn_cbor_free(const cn_cbor* js);
