@@ -5,7 +5,7 @@
 ## prepare CMAKE
 cmake_minimum_required ( VERSION 3.0.0 )
 
-set ( VERSION_MAJOR 0 CACHE STRING "Project major version number")
+set ( VERSION_MAJOR 0   CACHE STRING "Project major version number")
 set ( VERSION_MINOR "1" CACHE STRING "Project minor version number" )
 set ( VERSION_PATCH "0" CACHE STRING "Project patch version number" )
 set ( CN_VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}" )
@@ -16,11 +16,11 @@ project ( "cn-cbor" VERSION "${CN_VERSION}")
 find_package(Doxygen)
 
 ## setup options
-option ( use_context "Use context pointer for CBOR functions" OFF )
-option ( verbose "Produce verbose makefile output" OFF )
-option ( optimize "Optimize for size" OFF )
+option ( use_context    "Use context pointer for CBOR functions" OFF )
+option ( verbose        "Produce verbose makefile output" OFF )
+option ( optimize       "Optimize for size" OFF )
 option ( fatal_warnings "Treat build warnings as errors" ON )
-option ( coveralls "Generate coveralls data" ON )
+option ( coveralls      "Generate coveralls data" ON )
 option ( coveralls_send "Send data to coveralls site" OFF )
 option ( build_docs "Create docs using Doxygen" ${DOXYGEN_FOUND} )
 
