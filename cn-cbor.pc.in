@@ -7,5 +7,5 @@ Name: cn-cbor
 Description: A constrained node implementation of CBOR in C
 URL: https://github.com/cabo/cn-cbor
 Version: @CN_VERSION@
-Libs: -L${libdir} -lspud
+Libs: -L${libdir} -lcn-cbor
 Cflags: -I${includedir}

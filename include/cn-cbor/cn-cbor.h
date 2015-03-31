@@ -1,3 +1,9 @@
+/**
+ * \file
+ * \brief
+ * CBOR parsing
+ */
+
 #ifndef CN_CBOR_H
 #define CN_CBOR_H
 
@@ -8,58 +14,128 @@ extern "C" {
 } /* Duh. */
 #endif
 
+/**
+ * All of the different kinds of CBOR values.
+ */
 typedef enum cn_cbor_type {
+  /** null */
   CN_CBOR_NULL,
-  CN_CBOR_FALSE,   CN_CBOR_TRUE,
-  CN_CBOR_UINT,    CN_CBOR_INT,
-  CN_CBOR_BYTES,   CN_CBOR_TEXT,
-  CN_CBOR_BYTES_CHUNKED,   CN_CBOR_TEXT_CHUNKED, /* += 2 */
-  CN_CBOR_ARRAY,   CN_CBOR_MAP,
+  /** false */
+  CN_CBOR_FALSE,
+  /** true */
+  CN_CBOR_TRUE,
+  /** Positive integers */
+  CN_CBOR_UINT,
+  /** Negative integers */
+  CN_CBOR_INT,
+  /** Byte string */
+  CN_CBOR_BYTES,
+  /** UTF-8 string */
+  CN_CBOR_TEXT,
+  /** Byte string, in chunks.  Each chunk is a child. */
+  CN_CBOR_BYTES_CHUNKED,
+  /** UTF-8 string, in chunks.  Each chunk is a child */
+  CN_CBOR_TEXT_CHUNKED,
+  /** Array of CBOR values.  Each array element is a child, in order */
+  CN_CBOR_ARRAY,
+  /** Map of key/value pairs.  Each key and value is a child, alternating. */
+  CN_CBOR_MAP,
+  /** Tag describing the next value.  The next value is the single child. */
   CN_CBOR_TAG,
-  CN_CBOR_SIMPLE,  CN_CBOR_DOUBLE,
+  /** Simple value, other than the defined ones */
+  CN_CBOR_SIMPLE,
+  /** Doubles, floats, and half-floats */
+  CN_CBOR_DOUBLE,
+  /** An error has occurred */
   CN_CBOR_INVALID
 } cn_cbor_type;
 
+/**
+ * Flags used during parsing.  Not useful for consumers of the
+ * `cn_cbor` structure.
+ */
 typedef enum cn_cbor_flags {
+  /** The count field will be used for parsing */
   CN_CBOR_FL_COUNT = 1,
+  /** An indefinite number of children */
   CN_CBOR_FL_INDEF = 2,
+  /** Not used yet; the structure must free the v.str pointer when the
+     structure is freed */
   CN_CBOR_FL_OWNER = 0x80,            /* of str */
 } cn_cbor_flags;
 
+/**
+ * A CBOR value
+ */
 typedef struct cn_cbor {
+  /** The type of value */
   cn_cbor_type type;
+  /** Flags used at parse time */
   cn_cbor_flags flags;
+  /** Data associated with the value; different branches of the union are
+      used depending on the `type` field. */
   union {
+    /** CN_CBOR_BYTES, CN_CBOR_TEXT */
     const char* str;
+    /** CN_CBOR_INT */
     long sint;
+    /** CN_CBOR_UINT */
     unsigned long uint;
+    /** CN_CBOR_DOUBLE */
     double dbl;
-    unsigned long count;        /* for use during filling */
+    /** for use during parsing */
+    unsigned long count;
   } v;                          /* TBD: optimize immediate */
+  /** Number of children.  Note: for maps, this is 2x the number of entries */
   int length;
+  /** The first child value */
   struct cn_cbor* first_child;
+  /** The last child value */
   struct cn_cbor* last_child;
+  /** The sibling after this one, or NULL if this is the last */
   struct cn_cbor* next;
+  /** The parent of this value, or NULL if this is the root */
   struct cn_cbor* parent;
 } cn_cbor;
 
+/**
+ * All of the different kinds of errors
+ */
 typedef enum cn_cbor_error {
+  /** No error has occurred */
   CN_CBOR_NO_ERROR,
+  /** More data was expected while parsing */
   CN_CBOR_ERR_OUT_OF_DATA,
+  /** Some extra data was left over at the end of parsing */
   CN_CBOR_ERR_NOT_ALL_DATA_CONSUMED,
+  /** A map should be alternating keys and values.  A break was found
+      when a value was expected */
   CN_CBOR_ERR_ODD_SIZE_INDEF_MAP,
+  /** A break was found where it wasn't expected */
   CN_CBOR_ERR_BREAK_OUTSIDE_INDEF,
+  /** Indefinite encoding works for bstrs, strings, arrays, and maps.
+      A different major type tried to use it. */
   CN_CBOR_ERR_MT_UNDEF_FOR_INDEF,
+  /** Additional Information values 28-30 are reserved */
   CN_CBOR_ERR_RESERVED_AI,
+  /** A chunked encoding was used for a string or bstr, and one of the elements
+      wasn't the expected (string/bstr) type */
   CN_CBOR_ERR_WRONG_NESTING_IN_INDEF_STRING,
+  /** An invalid parameter was passed to a function */
   CN_CBOR_ERR_INVALID_PARAMETER,
+  /** Allocation failed */
   CN_CBOR_ERR_OUT_OF_MEMORY
 } cn_cbor_error;
 
 extern const char *cn_cbor_error_str[];
 
+/**
+ * Errors
+ */
 typedef struct cn_cbor_errback {
+  /** The position in the input where the erorr happened */
   int pos;
+  /** The error, or CN_CBOR_NO_ERROR if none */
   cn_cbor_error err;
 } cn_cbor_errback;
 
@@ -96,11 +172,51 @@ typedef struct cn_cbor_context {
 
 #endif
 
+/**
+ * Decode an array of CBOR bytes into structures.
+ *
+ * @param[in]  buf          The array of bytes to parse
+ * @param[in]  len          The number of bytes in the array
+ * @param[in]  context      Allocation context (only if USE_CBOR_CONTEXT is defined)
+ * @param[out] errp         Error, if NULL is returned
+ * @return                  The parsed CBOR structure, or NULL on error
+ */
 const cn_cbor* cn_cbor_decode(const unsigned char* buf, size_t len CBOR_CONTEXT, cn_cbor_errback *errp);
+
+/**
+ * Get a value from a CBOR map that has the given string as a key.
+ *
+ * @param[in]  cb           The CBOR map
+ * @param[in]  key          The string to look up in the map
+ * @return                  The matching value, or NULL if the key is not found
+ */
 const cn_cbor* cn_cbor_mapget_string(const cn_cbor* cb, const char* key);
+
+/**
+ * Get a value from a CBOR map that has the given integer as a key.
+ *
+ * @param[in]  cb           The CBOR map
+ * @param[in]  key          The int to look up in the map
+ * @return                  The matching value, or NULL if the key is not found
+ */
 const cn_cbor* cn_cbor_mapget_int(const cn_cbor* cb, int key);
+
+/**
+ * Get the item with the given index from a CBOR array.
+ *
+ * @param[in]  cb           The CBOR map
+ * @param[in]  idx          The array index
+ * @return                  The matching value, or NULL if the index is invalid
+ */
 const cn_cbor* cn_cbor_index(const cn_cbor* cb, int idx);
-void cn_cbor_free(const cn_cbor* js CBOR_CONTEXT);
+
+/**
+ * Free the given CBOR structure.
+ *
+ * @param[in]  cb           The CBOR value to free
+ * @param[in]  context      Allocation context (only if USE_CBOR_CONTEXT is defined)
+ */
+void cn_cbor_free(const cn_cbor* cb CBOR_CONTEXT);
 
 #ifdef  __cplusplus
 }
