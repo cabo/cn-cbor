@@ -98,8 +98,8 @@ CTEST(cbor, parse)
     const cn_cbor *cb;
     buffer b;
     size_t i;
-    unsigned char encoded[1024];
-    ssize_t enc_sz;
+//    unsigned char encoded[1024];
+//    ssize_t enc_sz;
 
     for (i=0; i<sizeof(tests)/sizeof(char*); i++) {
         ASSERT_TRUE(parse_hex(tests[i], &b));
