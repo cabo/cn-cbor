@@ -52,7 +52,8 @@ typedef enum cn_cbor_error {
   CN_CBOR_ERR_MT_UNDEF_FOR_INDEF,
   CN_CBOR_ERR_RESERVED_AI,
   CN_CBOR_ERR_WRONG_NESTING_IN_INDEF_STRING,
-  CN_CBOR_ERR_OUT_OF_MEMORY,
+  CN_CBOR_ERR_INVALID_PARAMETER,
+  CN_CBOR_ERR_OUT_OF_MEMORY
 } cn_cbor_error;
 
 extern const char *cn_cbor_error_str[];
@@ -62,13 +63,44 @@ typedef struct cn_cbor_errback {
   cn_cbor_error err;
 } cn_cbor_errback;
 
-const cn_cbor* cn_cbor_decode(const char* buf, size_t len, cn_cbor_errback *errp);
+#ifdef USE_CBOR_CONTEXT
+
+typedef void* (*cn_alloc_func)(size_t count, size_t size, void *context);
+typedef void (*cn_free_func)(void *ptr, void *context);
+
+typedef struct cn_cbor_context {
+    cn_alloc_func calloc_func;
+    cn_free_func  free_func;
+    void *context;
+} cn_cbor_context;
+
+#define CN_CALLOC(ctx) ((ctx) && (ctx)->calloc_func) ? \
+    (ctx)->calloc_func(1, sizeof(cn_cbor), (ctx)->context) : \
+    calloc(1, sizeof(cn_cbor));
+#define CN_FREE(ptr, ctx) ((ctx) && (ctx)->free_func) ? \
+    (ctx)->free_func((ptr), (ctx)->context) : \
+    free((ptr));
+#define CBOR_CONTEXT , cn_cbor_context *context
+#define CBOR_CONTEXT_COMMA cn_cbor_context *context,
+
+#else
+
+#define CBOR_CONTEXT
+#define CBOR_CONTEXT_COMMA
+#ifndef CN_CALLOC
+#define CN_CALLOC calloc(1, sizeof(cn_cbor))
+#endif
+#ifndef CN_FREE
+#define CN_FREE free
+#endif
+
+#endif
+
+const cn_cbor* cn_cbor_decode(const unsigned char* buf, size_t len CBOR_CONTEXT, cn_cbor_errback *errp);
 const cn_cbor* cn_cbor_mapget_string(const cn_cbor* cb, const char* key);
 const cn_cbor* cn_cbor_mapget_int(const cn_cbor* cb, int key);
-const cn_cbor* cn_cbor_index(const cn_cbor* cb, unsigned int idx);
-
-const cn_cbor* cn_cbor_alloc(cn_cbor_type t);
-void cn_cbor_free(const cn_cbor* js);
+const cn_cbor* cn_cbor_index(const cn_cbor* cb, int idx);
+void cn_cbor_free(const cn_cbor* js CBOR_CONTEXT);
 
 #ifdef  __cplusplus
 }

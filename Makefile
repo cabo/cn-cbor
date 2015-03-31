@@ -8,8 +8,8 @@ test: cntest
 	env MallocStackLogging=true ./cntest >new.out
 	-diff new.out expected.out
 
-cntest: cbor.h cn-cbor.h cn-cbor.c cn-error.c cn-manip.c test.c 
-	clang $(CFLAGS) cn-cbor.c cn-error.c cn-manip.c test.c -o cntest
+cntest: cbor.h cn-cbor.h cn-cbor.c cn-error.c cn-get.c test.c
+	clang $(CFLAGS) cn-cbor.c cn-error.c cn-get.c test.c -o cntest
 
 size: cn-cbor.o
 	size cn-cbor.o

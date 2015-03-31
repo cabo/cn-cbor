@@ -8,7 +8,7 @@
 
 #define ERROR(msg, p) fprintf(stderr, "ERROR: " msg " %s\n", (p));
 
-static char* load_file(const char* filepath, char **end) {
+static unsigned char* load_file(const char* filepath, unsigned char **end) {
   struct stat st;
   if (stat(filepath, &st)==-1) {
     ERROR("can't find file", filepath);
@@ -19,7 +19,7 @@ static char* load_file(const char* filepath, char **end) {
     ERROR("can't open file", filepath);
     return 0;
   }
-  char* text=malloc(st.st_size+1); // this is not going to be freed
+  unsigned char* text=malloc(st.st_size+1); // this is not going to be freed
   if (st.st_size!=read(fd, text, st.st_size)) {
     ERROR("can't read file", filepath);
     close(fd);
@@ -92,7 +92,7 @@ const char *err_name[] = {
   "CN_CBOR_ERR_OUT_OF_MEMORY",
 };
 
-static void cn_cbor_decode_test(const char *buf, int len) {
+static void cn_cbor_decode_test(const unsigned char *buf, int len) {
   struct cn_cbor_errback back;
   const cn_cbor *ret = cn_cbor_decode(buf, len, &back);
   if (ret)
@@ -102,24 +102,25 @@ static void cn_cbor_decode_test(const char *buf, int len) {
 
 int main() {
   char buf[100000];
-  char *end;
-  char *s = load_file("cases.cbor", &end);
+  unsigned char *end;
+  char *bufend;
+  unsigned char *s = load_file("cases.cbor", &end);
   printf("%zd\n", end-s);
   const cn_cbor *cb = cn_cbor_decode(s, end-s, 0);
   if (cb) {
-    dump(cb, buf, &end, 0);
-    *end = 0;
+    dump(cb, buf, &bufend, 0);
+    *bufend = 0;
     printf("%s\n", buf);
     cn_cbor_free(cb);
     cb = 0;                     /* for leaks testing */
   }
-  cn_cbor_decode_test("\xff", 1);    /* break outside indef */
-  cn_cbor_decode_test("\x1f", 1);    /* mt undef for indef */
-  cn_cbor_decode_test("\x00\x00", 2);    /* not all data consumed */
-  cn_cbor_decode_test("\x81", 1);    /* out of data */
-  cn_cbor_decode_test("\x1c", 1);    /* reserved ai */
-  cn_cbor_decode_test("\xbf\x00\xff", 3);    /* odd size indef map */
-  cn_cbor_decode_test("\x7f\x40\xff", 3);    /* wrong nesting in indef string */
+  cn_cbor_decode_test((const unsigned char*)"\xff", 1);    /* break outside indef */
+  cn_cbor_decode_test((const unsigned char*)"\x1f", 1);    /* mt undef for indef */
+  cn_cbor_decode_test((const unsigned char*)"\x00\x00", 2);    /* not all data consumed */
+  cn_cbor_decode_test((const unsigned char*)"\x81", 1);    /* out of data */
+  cn_cbor_decode_test((const unsigned char*)"\x1c", 1);    /* reserved ai */
+  cn_cbor_decode_test((const unsigned char*)"\xbf\x00\xff", 3);    /* odd size indef map */
+  cn_cbor_decode_test((const unsigned char*)"\x7f\x40\xff", 3);    /* wrong nesting in indef string */
   system("leaks test");
 }
 

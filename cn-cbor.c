@@ -17,15 +17,19 @@ extern "C" {
 #include "cn-cbor.h"
 #include "cbor.h"
 
-// can be redefined, e.g. for pool allocation
-#ifndef CN_CBOR_CALLOC
-#define CN_CBOR_CALLOC() calloc(1, sizeof(cn_cbor))
-#define CN_CBOR_FREE(cb) free((void*)(cb))
-#endif
-
 #define CN_CBOR_FAIL(code) do { pb->err = code;  goto fail; } while(0)
 
-void cn_cbor_free(const cn_cbor* cb) {
+#ifdef USE_CBOR_CONTEXT
+#define CBOR_CONTEXT_PARAM , context
+#define CN_CALLOC_CONTEXT() CN_CALLOC(context)
+#define CN_CBOR_FREE_CONTEXT(p) CN_FREE(p, context)
+#else
+#define CBOR_CONTEXT_PARAM
+#define CN_CALLOC_CONTEXT() CN_CALLOC
+#define CN_CBOR_FREE_CONTEXT(p) CN_FREE(p)
+#endif
+
+void cn_cbor_free(const cn_cbor* cb CBOR_CONTEXT) {
   cn_cbor* p = (cn_cbor*) cb;
   while (p) {
     cn_cbor* p1;
@@ -36,7 +40,7 @@ void cn_cbor_free(const cn_cbor* cb) {
       if ((p1 = p->parent))
         p1->first_child = 0;
     }
-    CN_CBOR_FREE(p);
+    CN_CBOR_FREE_CONTEXT(p);
     p = p1;
   }
 }
@@ -81,7 +85,7 @@ struct parse_buf {
   stmt;                                         \
   pos += n;
 
-static cn_cbor *decode_item (struct parse_buf *pb, cn_cbor* top_parent) {
+static cn_cbor *decode_item (struct parse_buf *pb CBOR_CONTEXT, cn_cbor* top_parent) {
   unsigned char *pos = pb->buf;
   unsigned char *ebuf = pb->ebuf;
   cn_cbor* parent = top_parent;
@@ -89,7 +93,7 @@ static cn_cbor *decode_item (struct parse_buf *pb, cn_cbor* top_parent) {
   unsigned int mt;
   int ai;
   uint64_t val;
-  cn_cbor* cb;
+  cn_cbor* cb = NULL;
   union {
     float f;
     uint32_t u;
@@ -119,7 +123,7 @@ again:
   ai = ib & 0x1f;
   val = ai;
 
-  cb = CN_CBOR_CALLOC();
+  cb = CN_CALLOC_CONTEXT();
   if (!cb)
     CN_CBOR_FAIL(CN_CBOR_ERR_OUT_OF_MEMORY);
 
@@ -159,7 +163,7 @@ again:
   case MT_BYTES: case MT_TEXT:
     cb->v.str = (char *) pos;
     cb->length = val;
-    TAKE(pos, ebuf, val, );
+    TAKE(pos, ebuf, val, ;);
     break;
   case MT_MAP:
     val <<= 1;
@@ -222,19 +226,24 @@ fail:
   return 0;
 }
 
-const cn_cbor* cn_cbor_decode(const char* buf, size_t len, cn_cbor_errback *errp) {
+const cn_cbor* cn_cbor_decode(const unsigned char* buf, size_t len CBOR_CONTEXT, cn_cbor_errback *errp) {
   cn_cbor catcher = {CN_CBOR_INVALID, 0, {0}, 0, NULL, NULL, NULL, NULL};
-  struct parse_buf pb = {(unsigned char *)buf, (unsigned char *)buf+len, CN_CBOR_NO_ERROR};
-  cn_cbor* ret = decode_item(&pb, &catcher);
+  struct parse_buf pb;
+  cn_cbor* ret;
+
+  pb.buf  = (unsigned char *)buf;
+  pb.ebuf = (unsigned char *)buf+len;
+  pb.err  = CN_CBOR_NO_ERROR;
+  ret = decode_item(&pb CBOR_CONTEXT_PARAM, &catcher);
   if (ret != NULL) {
     /* mark as top node */
     ret->parent = NULL;
   } else {
     if (catcher.first_child) {
       catcher.first_child->parent = 0;
-      cn_cbor_free(catcher.first_child);
+      cn_cbor_free(catcher.first_child CBOR_CONTEXT_PARAM);
     }
-  //fail:
+//fail:
     if (errp) {
       errp->err = pb.err;
       errp->pos = pb.buf - (unsigned char *)buf;
