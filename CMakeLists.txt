@@ -40,7 +40,13 @@ set ( CMAKE_LIBRARY_OUTPUT_DIRECTORY ${dist_dir}/lib )
 set ( CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${dist_dir}/lib )
 
 if (NOT CMAKE_BUILD_TYPE)
-  set ( CMAKE_BUILD_TYPE Debug )
+  if ( optimize )
+    set ( CMAKE_BUILD_TYPE MinSizeRel )
+    set ( coveralls OFF )
+    set ( coveralls_send OFF )
+  else ()
+    set ( CMAKE_BUILD_TYPE Debug )
+  endif ()
 endif()
 
 if ( CMAKE_C_COMPILER_ID STREQUAL "GNU" OR
