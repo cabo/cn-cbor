@@ -2,7 +2,7 @@
 #include <string.h>
 #include <assert.h>
 
-#include "cn-cbor.h"
+#include "cn-cbor/cn-cbor.h"
 
 const cn_cbor* cn_cbor_mapget_int(const cn_cbor* cb, int key) {
   cn_cbor* cp;

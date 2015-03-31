@@ -14,7 +14,7 @@ extern "C" {
 #include <assert.h>
 #include <math.h>
 
-#include "cn-cbor.h"
+#include "cn-cbor/cn-cbor.h"
 #include "cbor.h"
 
 #define CN_CBOR_FAIL(code) do { pb->err = code;  goto fail; } while(0)
