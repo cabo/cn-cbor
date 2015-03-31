@@ -86,7 +86,8 @@ typedef struct cn_cbor {
     /** for use during parsing */
     unsigned long count;
   } v;                          /* TBD: optimize immediate */
-  /** Number of children.  Note: for maps, this is 2x the number of entries */
+  /** Number of children.
+    * @note: for maps, this is 2x the number of entries */
   int length;
   /** The first child value */
   struct cn_cbor* first_child;
@@ -127,6 +128,11 @@ typedef enum cn_cbor_error {
   CN_CBOR_ERR_OUT_OF_MEMORY
 } cn_cbor_error;
 
+/**
+ * Strings matching the `cn_cbor_error` conditions.
+ *
+ * @todo: turn into a function to make the type safety more clear?
+ */
 extern const char *cn_cbor_error_str[];
 
 /**
@@ -141,34 +147,54 @@ typedef struct cn_cbor_errback {
 
 #ifdef USE_CBOR_CONTEXT
 
-typedef void* (*cn_alloc_func)(size_t count, size_t size, void *context);
+/**
+ * Allocate and zero out memory.  `count` elements of `size` are required,
+ * as for `calloc(3)`.  The `context` is the `cn_cbor_context` passed in
+ * earlier to the CBOR routine.
+ *
+ * @param[in] count   The number of items to allocate
+ * @param[in] size    The size of each item
+ * @param[in] context The allocation context
+ */
+typedef void* (*cn_calloc_func)(size_t count, size_t size, void *context);
+
+/**
+ * Free memory previously allocated with a context.  If using a pool allocator,
+ * this function will often be a no-op, but it must be supplied in order to
+ * prevent the CBOR library from calling `free(3)`.
+ *
+ * @note: it may be that this is never needed; if so, it will be removed for
+ * clarity and speed.
+ *
+ * @param  context [description]
+ * @return         [description]
+ */
 typedef void (*cn_free_func)(void *ptr, void *context);
 
+/**
+ * The allocation context.
+ */
 typedef struct cn_cbor_context {
-    cn_alloc_func calloc_func;
+    /** The pool `calloc` routine.  Must allocate and zero. */
+    cn_calloc_func calloc_func;
+    /** The pool `free` routine.  Often a no-op, but required. */
     cn_free_func  free_func;
+    /** Typically, the pool object, to be used when calling `calloc_func`
+      * and `free_func` */
     void *context;
 } cn_cbor_context;
 
-#define CN_CALLOC(ctx) ((ctx) && (ctx)->calloc_func) ? \
-    (ctx)->calloc_func(1, sizeof(cn_cbor), (ctx)->context) : \
-    calloc(1, sizeof(cn_cbor));
-#define CN_FREE(ptr, ctx) ((ctx) && (ctx)->free_func) ? \
-    (ctx)->free_func((ptr), (ctx)->context) : \
-    free((ptr));
+/** When USE_CBOR_CONTEXT is defined, many functions take an extra `context`
+  * parameter */
 #define CBOR_CONTEXT , cn_cbor_context *context
+/** When USE_CBOR_CONTEXT is defined, some functions take an extra `context`
+  * parameter at the beginning */
 #define CBOR_CONTEXT_COMMA cn_cbor_context *context,
 
 #else
 
 #define CBOR_CONTEXT
 #define CBOR_CONTEXT_COMMA
-#ifndef CN_CALLOC
-#define CN_CALLOC calloc(1, sizeof(cn_cbor))
-#endif
-#ifndef CN_FREE
-#define CN_FREE free
-#endif
 
 #endif
 
@@ -177,7 +203,7 @@ typedef struct cn_cbor_context {
  *
  * @param[in]  buf          The array of bytes to parse
  * @param[in]  len          The number of bytes in the array
- * @param[in]  context      Allocation context (only if USE_CBOR_CONTEXT is defined)
+ * @param[in]  CBOR_CONTEXT Allocation context (only if USE_CBOR_CONTEXT is defined)
  * @param[out] errp         Error, if NULL is returned
  * @return                  The parsed CBOR structure, or NULL on error
  */
@@ -214,7 +240,7 @@ const cn_cbor* cn_cbor_index(const cn_cbor* cb, int idx);
  * Free the given CBOR structure.
  *
  * @param[in]  cb           The CBOR value to free
- * @param[in]  context      Allocation context (only if USE_CBOR_CONTEXT is defined)
+ * @param[in]  CBOR_CONTEXT Allocation context (only if USE_CBOR_CONTEXT is defined)
  */
 void cn_cbor_free(const cn_cbor* cb CBOR_CONTEXT);
 

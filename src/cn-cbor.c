@@ -19,16 +19,6 @@ extern "C" {
 
 #define CN_CBOR_FAIL(code) do { pb->err = code;  goto fail; } while(0)
 
-#ifdef USE_CBOR_CONTEXT
-#define CBOR_CONTEXT_PARAM , context
-#define CN_CALLOC_CONTEXT() CN_CALLOC(context)
-#define CN_CBOR_FREE_CONTEXT(p) CN_FREE(p, context)
-#else
-#define CBOR_CONTEXT_PARAM
-#define CN_CALLOC_CONTEXT() CN_CALLOC
-#define CN_CBOR_FREE_CONTEXT(p) CN_FREE(p)
-#endif
-
 void cn_cbor_free(const cn_cbor* cb CBOR_CONTEXT) {
   cn_cbor* p = (cn_cbor*) cb;
   while (p) {

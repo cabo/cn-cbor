@@ -66,4 +66,47 @@
 #define IB_FLOAT4 (IB_PRIM + AI_4)
 #define IB_FLOAT8 (IB_PRIM + AI_8)
 
+// These definitions are here because they aren't required for the public
+// interface, and they were quite confusing in cn-cbor.h
+
+#ifdef USE_CBOR_CONTEXT
+/**
+ * Allocate enough space for 1 `cn_cbor` structure.
+ *
+ * @param[in]  ctx  The allocation context, or NULL for calloc.
+ * @return          A pointer to a `cn_cbor` or NULL on failure
+ */
+#define CN_CALLOC(ctx) ((ctx) && (ctx)->calloc_func) ? \
+    (ctx)->calloc_func(1, sizeof(cn_cbor), (ctx)->context) : \
+    calloc(1, sizeof(cn_cbor));
+
+/**
+ * Free a
+ * @param  free_func [description]
+ * @return           [description]
+ */
+#define CN_FREE(ptr, ctx) ((ctx) && (ctx)->free_func) ? \
+    (ctx)->free_func((ptr), (ctx)->context) : \
+    free((ptr));
+
+#define CBOR_CONTEXT_PARAM , context
+#define CN_CALLOC_CONTEXT() CN_CALLOC(context)
+#define CN_CBOR_FREE_CONTEXT(p) CN_FREE(p, context)
+
+#else
+
+#define CBOR_CONTEXT_PARAM
+#define CN_CALLOC_CONTEXT() CN_CALLOC
+#define CN_CBOR_FREE_CONTEXT(p) CN_FREE(p)
+
+#ifndef CN_CALLOC
+#define CN_CALLOC calloc(1, sizeof(cn_cbor))
 #endif
+
+#ifndef CN_FREE
+#define CN_FREE free
+#endif
+
+#endif // USE_CBOR_CONTEXT
+
+#endif // CBOR_PROTOCOL_H__
