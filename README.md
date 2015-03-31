@@ -19,4 +19,8 @@ changes, in order to get even closer to 0.5 KiB, but I ran out of
 time.  So here it is.  If I do get around to making these changes, the
 API will indeed change a bit, so please be forewarned.
 
+## Building
+
+    ./build.sh
+
 License: MIT
