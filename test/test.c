@@ -1,10 +1,17 @@
 #include <unistd.h>
-#include "cn-cbor.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <string.h>
+
+#include "cn-cbor/cn-cbor.h"
+
+#ifdef USE_CBOR_CONTEXT
+#define CBOR_CONTEXT_PARAM , NULL
+#else
+#define CBOR_CONTEXT_PARAM
+#endif
 
 #define ERROR(msg, p) fprintf(stderr, "ERROR: " msg " %s\n", (p));
 
@@ -94,7 +101,7 @@ const char *err_name[] = {
 
 static void cn_cbor_decode_test(const unsigned char *buf, int len) {
   struct cn_cbor_errback back;
-  const cn_cbor *ret = cn_cbor_decode(buf, len, &back);
+  const cn_cbor *ret = cn_cbor_decode(buf, len CBOR_CONTEXT_PARAM, &back);
   if (ret)
     printf("oops 1");
   printf("%s at %d\n", err_name[back.err], back.pos);
@@ -106,12 +113,12 @@ int main() {
   char *bufend;
   unsigned char *s = load_file("cases.cbor", &end);
   printf("%zd\n", end-s);
-  const cn_cbor *cb = cn_cbor_decode(s, end-s, 0);
+  const cn_cbor *cb = cn_cbor_decode(s, end-s CBOR_CONTEXT_PARAM, 0);
   if (cb) {
     dump(cb, buf, &bufend, 0);
     *bufend = 0;
     printf("%s\n", buf);
-    cn_cbor_free(cb);
+    cn_cbor_free(cb CBOR_CONTEXT_PARAM);
     cb = 0;                     /* for leaks testing */
   }
   cn_cbor_decode_test((const unsigned char*)"\xff", 1);    /* break outside indef */
