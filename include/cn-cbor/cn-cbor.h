@@ -15,6 +15,7 @@ extern "C" {
 #endif
 
 #include <stdint.h>
+#include <unistd.h>
 
 /**
  * All of the different kinds of CBOR values.
