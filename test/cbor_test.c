@@ -20,8 +20,10 @@ int main(int argc, const char *argv[])
 
 #ifdef USE_CBOR_CONTEXT
 #define CONTEXT_NULL , NULL
+#define CONTEXT_NULL_COMMA NULL,
 #else
 #define CONTEXT_NULL
+#define CONTEXT_NULL_COMMA
 #endif
 
 typedef struct _buffer {
@@ -224,4 +226,87 @@ CTEST(cbor, getset)
     ASSERT_NULL(val);
     free(b.ptr);
     cn_cbor_free(cb CONTEXT_NULL);
+}
+
+CTEST(cbor, create)
+{
+    cn_cbor_errback err;
+    const cn_cbor* val;
+    const char* data = "abc";
+    cn_cbor *cb_map = cn_cbor_map_create(CONTEXT_NULL_COMMA &err);
+    cn_cbor *cb_int;
+    cn_cbor *cb_data;
+
+    ASSERT_NOT_NULL(cb_map);
+    ASSERT_TRUE(err.err == CN_CBOR_NO_ERROR);
+
+    cb_int = cn_cbor_int_create(256 CONTEXT_NULL, &err);
+    ASSERT_NOT_NULL(cb_int);
+    ASSERT_TRUE(err.err == CN_CBOR_NO_ERROR);
+
+    cb_data = cn_cbor_data_create(data, 4 CONTEXT_NULL, &err);
+    ASSERT_NOT_NULL(cb_data);
+    ASSERT_TRUE(err.err == CN_CBOR_NO_ERROR);
+
+    cn_cbor_mapput_int(cb_map, 5, cb_int CONTEXT_NULL, &err);
+    ASSERT_TRUE(err.err == CN_CBOR_NO_ERROR);
+    ASSERT_TRUE(cb_map->length == 2);
+
+    cn_cbor_mapput_int(cb_map, -7, cb_data CONTEXT_NULL, &err);
+    ASSERT_TRUE(err.err == CN_CBOR_NO_ERROR);
+    ASSERT_TRUE(cb_map->length == 4);
+
+    cn_cbor_mapput_string(cb_map, "foo",
+                          cn_cbor_string_create(data CONTEXT_NULL, &err)
+                          CONTEXT_NULL, &err);
+    ASSERT_TRUE(err.err == CN_CBOR_NO_ERROR);
+    ASSERT_TRUE(cb_map->length == 6);
+
+    val = cn_cbor_mapget_int(cb_map, 5);
+    ASSERT_NOT_NULL(val);
+    ASSERT_TRUE(val->v.sint == 256);
+
+    val = cn_cbor_mapget_int(cb_map, -7);
+    ASSERT_NOT_NULL(val);
+    ASSERT_STR(val->v.str, "abc");
+
+    cn_cbor_free(cb_map CONTEXT_NULL);
+}
+
+CTEST(cbor, map_errors)
+{
+    cn_cbor_errback err;
+    cn_cbor *ci;
+    ci = cn_cbor_int_create(65536, CONTEXT_NULL_COMMA &err);
+    cn_cbor_mapput_int(ci, -5, NULL, CONTEXT_NULL_COMMA &err);
+    ASSERT_EQUAL(err.err, CN_CBOR_ERR_INVALID_PARAMETER);
+    cn_cbor_mapput_string(ci, "foo", NULL, CONTEXT_NULL_COMMA &err);
+    ASSERT_EQUAL(err.err, CN_CBOR_ERR_INVALID_PARAMETER);
+}
+
+CTEST(cbor, array)
+{
+    cn_cbor_errback err;
+    cn_cbor *a = cn_cbor_array_create(CONTEXT_NULL_COMMA &err);
+    ASSERT_NOT_NULL(a);
+    ASSERT_TRUE(err.err == CN_CBOR_NO_ERROR);
+    ASSERT_EQUAL(a->length, 0);
+
+    cn_cbor_array_append(a, cn_cbor_int_create(256, CONTEXT_NULL_COMMA &err), &err);
+    ASSERT_TRUE(err.err == CN_CBOR_NO_ERROR);
+    ASSERT_EQUAL(a->length, 1);
+
+    cn_cbor_array_append(a, cn_cbor_string_create("five", CONTEXT_NULL_COMMA &err), &err);
+    ASSERT_TRUE(err.err == CN_CBOR_NO_ERROR);
+    ASSERT_EQUAL(a->length, 2);
+}
+
+CTEST(cbor, array_errors)
+{
+    cn_cbor_errback err;
+    cn_cbor *ci = cn_cbor_int_create(12, CONTEXT_NULL_COMMA &err);
+    cn_cbor_array_append(NULL, ci, &err);
+    ASSERT_EQUAL(err.err, CN_CBOR_ERR_INVALID_PARAMETER);
+    cn_cbor_array_append(ci, NULL, &err);
+    ASSERT_EQUAL(err.err, CN_CBOR_ERR_INVALID_PARAMETER);
 }

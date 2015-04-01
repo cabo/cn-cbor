@@ -4,6 +4,7 @@
 
 set ( cbor_srcs
       cn-cbor.c
+      cn-create.c
       cn-encoder.c
       cn-error.c
       cn-get.c

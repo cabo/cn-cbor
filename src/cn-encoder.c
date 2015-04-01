@@ -11,7 +11,6 @@ extern "C" {
 #include <arpa/inet.h>
 #include <string.h>
 #include <strings.h>
-#include <stdint.h>
 #include <assert.h>
 
 #include "cn-cbor/cn-cbor.h"

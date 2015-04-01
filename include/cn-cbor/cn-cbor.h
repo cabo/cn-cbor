@@ -14,6 +14,8 @@ extern "C" {
 } /* Duh. */
 #endif
 
+#include <stdint.h>
+
 /**
  * All of the different kinds of CBOR values.
  */
@@ -209,7 +211,7 @@ typedef struct cn_cbor_context {
  * @param[out] errp         Error, if NULL is returned
  * @return                  The parsed CBOR structure, or NULL on error
  */
-const cn_cbor* cn_cbor_decode(const unsigned char* buf, size_t len CBOR_CONTEXT, cn_cbor_errback *errp);
+const cn_cbor* cn_cbor_decode(const uint8_t *buf, size_t len CBOR_CONTEXT, cn_cbor_errback *errp);
 
 /**
  * Get a value from a CBOR map that has the given string as a key.
@@ -307,6 +309,36 @@ ssize_t cbor_encoder_write(uint8_t *buf,
                            size_t buf_offset,
                            size_t buf_size,
                            const cn_cbor *cb);
+
+cn_cbor* cn_cbor_map_create(CBOR_CONTEXT_COMMA cn_cbor_errback *errp);
+
+cn_cbor* cn_cbor_data_create(const char* data, int len
+                             CBOR_CONTEXT,
+                             cn_cbor_errback *errp);
+
+cn_cbor* cn_cbor_string_create(const char* data
+                               CBOR_CONTEXT,
+                               cn_cbor_errback *errp);
+
+cn_cbor* cn_cbor_int_create(int64_t value
+                            CBOR_CONTEXT,
+                            cn_cbor_errback *errp);
+
+void cn_cbor_mapput_int(cn_cbor* cb_map,
+                        int64_t key, cn_cbor* cb_value
+                        CBOR_CONTEXT,
+                        cn_cbor_errback *errp);
+
+void cn_cbor_mapput_string(cn_cbor* cb_map,
+                           char* key, cn_cbor* cb_value
+                           CBOR_CONTEXT,
+                           cn_cbor_errback *errp);
+
+cn_cbor* cn_cbor_array_create(CBOR_CONTEXT_COMMA cn_cbor_errback *errp);
+
+void cn_cbor_array_append(cn_cbor* cb_array,
+                          cn_cbor* cb_value,
+                          cn_cbor_errback *errp);
 
 #ifdef  __cplusplus
 }
