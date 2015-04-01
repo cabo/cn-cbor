@@ -1,25 +1,25 @@
 # enable this for armv7 builds, lazily using iPhone SDK
-#CFLAGS = -I /Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS5.0.sdk/usr/include -arch armv7 -Os
-CFLAGS = -Os -Wall -Wextra -Wno-unknown-pragmas -Werror-implicit-function-declaration -Werror -Wno-unused-parameter -Wdeclaration-after-statement -Wwrite-strings -Wstrict-prototypes -Wmissing-prototypes
+#CFLAGS = -I /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk/usr/include -arch armv7 -Os
+CFLAGS = -Os -Wall -Wextra -Wno-unknown-pragmas -Werror-implicit-function-declaration -Werror -Wno-unused-parameter -Wdeclaration-after-statement -Wwrite-strings -Wstrict-prototypes -Wmissing-prototypes -Iinclude/cn-cbor
 
 all: cntest
 
 test: cntest
-	env MallocStackLogging=true ./cntest >new.out
-	-diff new.out expected.out
+	(cd test; env MallocStackLogging=true ../cntest) >new.out
+	-diff new.out test/expected.out
 
-cntest: cbor.h cn-cbor.h cn-cbor.c cn-error.c cn-manip.c test.c 
-	clang $(CFLAGS) cn-cbor.c cn-error.c cn-manip.c test.c -o cntest
+cntest: src/cbor.h include/cn-cbor/cn-cbor.h src/cn-cbor.c src/cn-error.c src/cn-manip.c test/test.c
+	clang $(CFLAGS) src/cn-cbor.c src/cn-error.c src/cn-manip.c test/test.c -o cntest
 
 size: cn-cbor.o
 	size cn-cbor.o
 	size -m cn-cbor.o
 
-cn-cbor.o: cn-cbor.c cn-cbor.h cbor.h
-	clang $(CFLAGS) -c cn-cbor.c
+cn-cbor.o: src/cn-cbor.c include/cn-cbor/cn-cbor.h src/cbor.h
+	clang $(CFLAGS) -c src/cn-cbor.c
 
-cn-cbor-play.zip: Makefile cbor.h cn-cbor.c cn-cbor.h expected.out test.c
+cn-cbor-play.zip: Makefile src/cbor.h src/cn-cbor.c include/cn-cbor/cn-cbor.h test/expected.out test/test.c
 	zip $@ $^
 
 clean:
-	$(RM) cntest *.o new.out
+	$(RM) cntest *.o new.out cn-cbor-play.zip
