@@ -33,14 +33,7 @@ const cn_cbor* cn_cbor_mapget_string(const cn_cbor* cb, const char* key) {
   keylen = strlen(key);
   for (cp = cb->first_child; cp && cp->next; cp = cp->next->next) {
     switch(cp->type) {
-    case CN_CBOR_TEXT:
-      if (keylen != cp->length) {
-        continue;
-      }
-      if (strncmp(key, cp->v.str, cp->length) == 0) {
-        return cp->next;
-      }
-      break;
+    case CN_CBOR_TEXT: // fall through
     case CN_CBOR_BYTES:
       if (keylen != cp->length) {
         continue;
@@ -55,9 +48,9 @@ const cn_cbor* cn_cbor_mapget_string(const cn_cbor* cb, const char* key) {
   return NULL;
 }
 
-const cn_cbor* cn_cbor_index(const cn_cbor* cb, int idx) {
+const cn_cbor* cn_cbor_index(const cn_cbor* cb, unsigned int idx) {
   cn_cbor *cp;
-  int i = 0;
+  unsigned int i = 0;
   assert(cb);
   for (cp = cb->first_child; cp; cp = cp->next) {
     if (i == idx) {
