@@ -49,6 +49,8 @@ if (NOT CMAKE_BUILD_TYPE)
   endif ()
 endif()
 
+message ( "Build type: ${CMAKE_BUILD_TYPE}" )
+
 if ( CMAKE_C_COMPILER_ID STREQUAL "GNU" OR
      CMAKE_C_COMPILER_ID MATCHES "Clang" )
   message ( STATUS "adding GCC/Clang options ")

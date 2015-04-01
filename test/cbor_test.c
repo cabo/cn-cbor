@@ -64,17 +64,17 @@ CTEST(cbor, parse)
 {
     cn_cbor_errback err;
     char *tests[] = {
-        "00",       // 0
-        "01",       // 1
-        "17",       // 23
-        "1818",     // 24
-        "190100",   // 256
+        "00",         // 0
+        "01",         // 1
+        "17",         // 23
+        "1818",       // 24
+        "190100",     // 256
         "1a00010000", // 65536
         "1b0000000100000000", // 4294967296
-        "20",       // -1
-        "37",       // -24
-        "3818",     // -25
-        "390100",   // -257
+        "20",         // -1
+        "37",         // -24
+        "3818",       // -25
+        "390100",     // -257
         "3a00010000", // -65537
         "3b0000000100000000", // -4294967297
         "4161",     // h"a"
@@ -83,10 +83,10 @@ CTEST(cbor, parse)
         "818100",   // [[0]]
         "a1616100",	// {"a":0}
         "d8184100", // tag
-        "f4",	    // false
-        "f5",	    // true
-        "f6",	    // null
-        "f7",	    // undefined
+        "f4",	      // false
+        "f5",	      // true
+        "f6",	      // null
+        "f7",	      // undefined
         "f8ff",     // simple(255)
         "fb3ff199999999999a", // 1.1
         "fb7ff8000000000000", // NaN
@@ -98,18 +98,18 @@ CTEST(cbor, parse)
     const cn_cbor *cb;
     buffer b;
     size_t i;
-//    unsigned char encoded[1024];
-//    ssize_t enc_sz;
+    unsigned char encoded[1024];
+    ssize_t enc_sz;
 
     for (i=0; i<sizeof(tests)/sizeof(char*); i++) {
         ASSERT_TRUE(parse_hex(tests[i], &b));
         cb = cn_cbor_decode(b.ptr, b.sz CONTEXT_NULL, &err);
         ASSERT_NOT_NULL(cb);
 
-        // enc_sz = cbor_encoder_write(encoded, 0, sizeof(encoded), cb);
-        // ASSERT_EQUAL(enc_sz, b.sz);
-        // ASSERT_EQUAL(memcmp(b.ptr, encoded, enc_sz), 0);
-        // free(b.ptr);
+        enc_sz = cbor_encoder_write(encoded, 0, sizeof(encoded), cb);
+        ASSERT_EQUAL(enc_sz, b.sz);
+        ASSERT_EQUAL(memcmp(b.ptr, encoded, enc_sz), 0);
+        free(b.ptr);
         cn_cbor_free(cb CONTEXT_NULL);
     }
 }
@@ -135,6 +135,12 @@ CTEST(cbor, fail)
     const cn_cbor *cb;
     buffer b;
     size_t i;
+    uint8_t buf[10];
+    cn_cbor inv = {CN_CBOR_INVALID, 0, {0}, 0, NULL, NULL, NULL, NULL};
+
+    ASSERT_EQUAL(-1, cbor_encoder_write_positive(buf, 0, sizeof(buf),
+                                                 CN_CBOR_INVALID, 0));
+    ASSERT_EQUAL(-1, cbor_encoder_write(buf, 0, sizeof(buf), &inv));
 
     for (i=0; i<sizeof(tests)/sizeof(cbor_failure); i++) {
         ASSERT_TRUE(parse_hex(tests[i].hex, &b));
