@@ -79,7 +79,9 @@ CTEST(cbor, parse)
         "3b0000000100000000", // -4294967297
         "4161",     // h"a"
         "6161",     // "a"
+        "80",       // []
         "8100",     // [0]
+        "820102",   // [1,2]
         "818100",   // [[0]]
         "a1616100",	// {"a":0}
         "d8184100", // tag
@@ -185,7 +187,7 @@ CTEST(cbor, getset)
     const cn_cbor *val;
     cn_cbor_errback err;
 
-    ASSERT_TRUE(parse_hex("a3436363630262626201616100", &b));
+    ASSERT_TRUE(parse_hex("a40000436363630262626201616100", &b));
     cb = cn_cbor_decode(b.ptr, b.sz CONTEXT_NULL, &err);
     ASSERT_NOT_NULL(cb);
     val = cn_cbor_mapget_string(cb, "a");
@@ -199,7 +201,7 @@ CTEST(cbor, getset)
     free(b.ptr);
     cn_cbor_free(cb CONTEXT_NULL);
 
-    ASSERT_TRUE(parse_hex("a2006161206162", &b));
+    ASSERT_TRUE(parse_hex("a3616100006161206162", &b));
     cb = cn_cbor_decode(b.ptr, b.sz CONTEXT_NULL, &err);
     ASSERT_NOT_NULL(cb);
     val = cn_cbor_mapget_int(cb, 0);
