@@ -27,7 +27,7 @@ cn_cbor* cn_cbor_map_create(CBOR_CONTEXT_COMMA cn_cbor_errback *errp)
   return ret;
 }
 
-cn_cbor* cn_cbor_data_create(const char* data, int len
+cn_cbor* cn_cbor_data_create(const uint8_t* data, int len
 							               CBOR_CONTEXT,
 							               cn_cbor_errback *errp)
 {
@@ -36,7 +36,7 @@ cn_cbor* cn_cbor_data_create(const char* data, int len
 
   ret->type = CN_CBOR_BYTES;
   ret->length = len;
-  ret->v.str = data;
+  ret->v.str = (const char*) data; // TODO: add v.ustr to the union?
 
   return ret;
 }
@@ -88,6 +88,21 @@ static void _append_kv(cn_cbor *cb_map, cn_cbor *key, cn_cbor *val)
   }
   cb_map->last_child = val;
   cb_map->length += 2;
+}
+
+void cn_cbor_map_put(cn_cbor* cb_map,
+                     cn_cbor *cb_key, cn_cbor *cb_value
+                     CBOR_CONTEXT,
+                     cn_cbor_errback *errp)
+{
+  //Make sure input is a map. Otherwise
+  if(!cb_map || !cb_key || !cb_value || cb_map->type != CN_CBOR_MAP)
+  {
+    if (errp) {errp->err = CN_CBOR_ERR_INVALID_PARAMETER;}
+    return;
+  }
+
+	_append_kv(cb_map, cb_key, cb_value);
 }
 
 void cn_cbor_mapput_int(cn_cbor* cb_map,

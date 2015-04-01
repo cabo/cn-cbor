@@ -244,7 +244,7 @@ CTEST(cbor, create)
     ASSERT_NOT_NULL(cb_int);
     ASSERT_TRUE(err.err == CN_CBOR_NO_ERROR);
 
-    cb_data = cn_cbor_data_create(data, 4 CONTEXT_NULL, &err);
+    cb_data = cn_cbor_data_create((const uint8_t*)data, 4 CONTEXT_NULL, &err);
     ASSERT_NOT_NULL(cb_data);
     ASSERT_TRUE(err.err == CN_CBOR_NO_ERROR);
 
@@ -261,6 +261,13 @@ CTEST(cbor, create)
                           CONTEXT_NULL, &err);
     ASSERT_TRUE(err.err == CN_CBOR_NO_ERROR);
     ASSERT_TRUE(cb_map->length == 6);
+
+    cn_cbor_map_put(cb_map,
+                    cn_cbor_string_create("bar" CONTEXT_NULL, &err),
+                    cn_cbor_string_create("qux" CONTEXT_NULL, &err)
+                    CONTEXT_NULL, &err);
+    ASSERT_TRUE(err.err == CN_CBOR_NO_ERROR);
+    ASSERT_TRUE(cb_map->length == 8);
 
     val = cn_cbor_mapget_int(cb_map, 5);
     ASSERT_NOT_NULL(val);
@@ -282,6 +289,7 @@ CTEST(cbor, map_errors)
     ASSERT_EQUAL(err.err, CN_CBOR_ERR_INVALID_PARAMETER);
     cn_cbor_mapput_string(ci, "foo", NULL, CONTEXT_NULL_COMMA &err);
     ASSERT_EQUAL(err.err, CN_CBOR_ERR_INVALID_PARAMETER);
+    cn_cbor_map_put(ci, NULL, NULL, CONTEXT_NULL_COMMA &err);
 }
 
 CTEST(cbor, array)

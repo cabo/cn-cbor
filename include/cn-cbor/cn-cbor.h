@@ -310,32 +310,122 @@ ssize_t cbor_encoder_write(uint8_t *buf,
                            size_t buf_size,
                            const cn_cbor *cb);
 
+/**
+ * Create a CBOR map.
+ *
+ * @param[in]   CBOR_CONTEXT Allocation context (only if USE_CBOR_CONTEXT is defined)
+ * @param[out]  errp         Error, if NULL is returned
+ * @return                   The created map, or NULL on error
+ */
 cn_cbor* cn_cbor_map_create(CBOR_CONTEXT_COMMA cn_cbor_errback *errp);
 
-cn_cbor* cn_cbor_data_create(const char* data, int len
+/**
+ * Create a CBOR byte string.  The data in the byte string is *not* owned
+ * by the CBOR object, so it is not freed automatically.
+ *
+ * @param[in]   data         The data
+ * @param[in]   len          The number of bytes of data
+ * @param[in]   CBOR_CONTEXT Allocation context (only if USE_CBOR_CONTEXT is defined)
+ * @param[out]  errp         Error, if NULL is returned
+ * @return                   The created object, or NULL on error
+ */
+cn_cbor* cn_cbor_data_create(const uint8_t* data, int len
                              CBOR_CONTEXT,
                              cn_cbor_errback *errp);
 
+/**
+ * Create a CBOR UTF-8 string.  The data is not checked for UTF-8 correctness.
+ * The data being stored in the string is *not* owned the CBOR object, so it is
+ * not freed automatically.
+ *
+ * @note: Do NOT use this function with untrusted data.  It calls strlen, and
+ * relies on proper NULL-termination.
+ *
+ * @param[in]   data         NULL-terminated UTF-8 string
+ * @param[in]   CBOR_CONTEXT Allocation context (only if USE_CBOR_CONTEXT is defined)
+ * @param[out]  errp         Error, if NULL is returned
+ * @return                   The created object, or NULL on error
+ */
 cn_cbor* cn_cbor_string_create(const char* data
                                CBOR_CONTEXT,
                                cn_cbor_errback *errp);
 
+/**
+ * Create a CBOR integer (either positive or negative).
+ *
+ * @param[in]   value    the value of the integer
+ * @param[in]   CBOR_CONTEXT Allocation context (only if USE_CBOR_CONTEXT is defined)
+ * @param[out]  errp         Error, if NULL is returned
+ * @return                   The created object, or NULL on error
+ */
 cn_cbor* cn_cbor_int_create(int64_t value
                             CBOR_CONTEXT,
                             cn_cbor_errback *errp);
 
+/**
+ * Put a CBOR object into a map with a CBOR object key.  Duplicate checks are NOT
+ * currently performed.
+ *
+ * @param[in]   cb_map       The map to insert into
+ * @param[in]   key          The key
+ * @param[in]   cb_value     The value
+ * @param[in]   CBOR_CONTEXT Allocation context (only if USE_CBOR_CONTEXT is defined)
+ * @param[out]  errp         Error
+ */
+void cn_cbor_map_put(cn_cbor* cb_map,
+                     cn_cbor *cb_key, cn_cbor *cb_value
+                     CBOR_CONTEXT,
+                     cn_cbor_errback *errp);
+
+/**
+ * Put a CBOR object into a map with an integer key.  Duplicate checks are NOT
+ * currently performed.
+ *
+ * @param[in]   cb_map       The map to insert into
+ * @param[in]   key          The integer key
+ * @param[in]   cb_value     The value
+ * @param[in]   CBOR_CONTEXT Allocation context (only if USE_CBOR_CONTEXT is defined)
+ * @param[out]  errp         Error
+ */
 void cn_cbor_mapput_int(cn_cbor* cb_map,
                         int64_t key, cn_cbor* cb_value
                         CBOR_CONTEXT,
                         cn_cbor_errback *errp);
 
+/**
+ * Put a CBOR object into a map with a string key.  Duplicate checks are NOT
+ * currently performed.
+ *
+ * @note: do not call this routine with untrusted string data.  It calls
+ * strlen, and requires a properly NULL-terminated key.
+ *
+ * @param[in]   cb_map       The map to insert into
+ * @param[in]   key          The string key
+ * @param[in]   cb_value     The value
+ * @param[in]   CBOR_CONTEXT Allocation context (only if USE_CBOR_CONTEXT is defined)
+ * @param[out]  errp         Error
+ */
 void cn_cbor_mapput_string(cn_cbor* cb_map,
                            char* key, cn_cbor* cb_value
                            CBOR_CONTEXT,
                            cn_cbor_errback *errp);
 
+/**
+ * Create a CBOR array
+ *
+ * @param[in]   CBOR_CONTEXT Allocation context (only if USE_CBOR_CONTEXT is defined)
+ * @param[out]  errp         Error, if NULL is returned
+ * @return                   The created object, or NULL on error
+ */
 cn_cbor* cn_cbor_array_create(CBOR_CONTEXT_COMMA cn_cbor_errback *errp);
 
+/**
+ * Append an item to the end of a CBOR array.
+ *
+ * @param[in]   cb_array  The array into which to insert
+ * @param[in]   cb_value  The value to insert
+ * @param[out]  errp      Error
+ */
 void cn_cbor_array_append(cn_cbor* cb_array,
                           cn_cbor* cb_value,
                           cn_cbor_errback *errp);
