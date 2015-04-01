@@ -249,53 +249,6 @@ const cn_cbor* cn_cbor_index(const cn_cbor* cb, int idx);
 void cn_cbor_free(const cn_cbor* cb CBOR_CONTEXT);
 
 /**
- * Write a positive integer, along with type information.
- *
- * @param[in]  buf        The buffer into which to write
- * @param[in]  buf_offset The offset (in bytes) from the beginning of the buffer
- *                        to start writing at
- * @param[in]  buf_size   The total length (in bytes) of the buffer
- * @param[in]  typ        Which type to write
- * @param[in]  val        The value to write
- * @return                -1 on fail, or number of bytes written
- */
-ssize_t cbor_encoder_write_positive(uint8_t *buf,
-                                    size_t buf_offset,
-                                    size_t buf_size,
-                                    cn_cbor_type typ,
-                                    uint64_t val);
-
-/**
- * Write a negative number.  No type information is needed for negative numbers.
- *
- * @param[in]  buf        The buffer into which to write
- * @param[in]  buf_offset The offset (in bytes) from the beginning of the buffer
- *                        to start writing at
- * @param[in]  buf_size   The total length (in bytes) of the buffer
- * @param[in]  val        The value to write
- * @return                -1 on fail, or number of bytes written
- */
-ssize_t cbor_encoder_write_negative(uint8_t *buf,
-                                    size_t buf_offset,
-                                    size_t buf_size,
-                                    int64_t val);
-
-/**
- * Write floating point number.
- *
- * @param[in]  buf        The buffer into which to write
- * @param[in]  buf_offset The offset (in bytes) from the beginning of the buffer
- *                        to start writing at
- * @param[in]  buf_size   The total length (in bytes) of the buffer
- * @param[in]  val        The value to write
- * @return                -1 on fail, or number of bytes written
- */
-ssize_t cbor_encoder_write_double(uint8_t *buf,
-                                  size_t buf_offset,
-                                  size_t buf_size,
-                                  double val);
-
-/**
  * Write a CBOR value and all of the child values.
  *
  * @param[in]  buf        The buffer into which to write

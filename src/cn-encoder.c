@@ -11,6 +11,7 @@ extern "C" {
 #include <arpa/inet.h>
 #include <string.h>
 #include <strings.h>
+#include <stdbool.h>
 #include <assert.h>
 
 #include "cn-cbor/cn-cbor.h"
@@ -27,20 +28,26 @@ static uint64_t hton64p(const uint8_t *p) {
   return ret;
 }
 
-#define ensure_writable(sz) if (buf_offset + count + (sz) >= buf_size) { \
-  return -1; \
+typedef struct _write_state
+{
+  uint8_t *buf;
+  ssize_t offset;
+  ssize_t size;
+} cn_write_state;
+
+#define ensure_writable(sz) if ((ws->offset<0) || (ws->offset + (sz) >= ws->size)) { \
+  ws->offset = -1; \
+  return; \
 }
 
 #define write_byte_and_data(b, data, sz) \
-buf[buf_offset+count] = (b); \
-count++; \
-memcpy(buf+buf_offset+count, (data), (sz)); \
-count += sz;
+ws->buf[ws->offset++] = (b); \
+memcpy(ws->buf+ws->offset, (data), (sz)); \
+ws->offset += sz;
 
 #define write_byte(b) \
 ensure_writable(1); \
-buf[buf_offset+count] = (b); \
-count++;
+ws->buf[ws->offset++] = (b); \
 
 static uint8_t _xlate[] = {
   IB_FALSE,    /* CN_CBOR_FALSE */
@@ -61,33 +68,29 @@ static uint8_t _xlate[] = {
   0xFF         /* CN_CBOR_INVALID */
 };
 
-// TODO: copy parse_buf
-ssize_t cbor_encoder_write_positive(uint8_t *buf,
-                                    size_t buf_offset,
-                                    size_t buf_size,
-                                    cn_cbor_type typ,
-                                    uint64_t val)
+static inline bool is_indefinite(const cn_cbor *cb)
 {
-  ssize_t count = 0;
+  return (cb->flags & CN_CBOR_FL_INDEF) != 0;
+}
+
+static void _write_positive(cn_write_state *ws, cn_cbor_type typ, uint64_t val) {
   uint8_t ib;
 
   assert((size_t)typ < sizeof(_xlate));
 
   ib = _xlate[typ];
   if (ib == 0xFF) {
-    return -1;
+    ws->offset = -1;
+    return;
   }
 
   if (val < 24) {
-    // TODO: add ensure_writable?
-    write_byte(ib + (uint8_t)val);
+    ensure_writable(1);
+    write_byte(ib | val);
   } else if (val < 256) {
     ensure_writable(2);
-    // TODO: make symmetric w/ write_byte
-    buf[buf_offset+count] = ib | 24;
-    count++;
-    buf[buf_offset+count] = (uint8_t)val;
-    count++;
+    write_byte(ib | 24);
+    write_byte((uint8_t)val);
   } else if (val < 65536) {
     uint16_t be16 = (uint16_t)val;
     ensure_writable(3);
@@ -104,110 +107,102 @@ ssize_t cbor_encoder_write_positive(uint8_t *buf,
     be64 = hton64p((const uint8_t*)&val);
     write_byte_and_data(ib | 27, (const void*)&be64, 8);
   }
-  return count;
 }
 
-ssize_t cbor_encoder_write_double(uint8_t *buf,
-                                  size_t buf_offset,
-                                  size_t buf_size,
-                                  double val) {
+static void _write_double(cn_write_state *ws, double val)
+{
   uint64_t be64;
   /* Copy the same problematic implementation from the decoder. */
   union {
     double d;
     uint64_t u;
   } u64;
-  ssize_t count = 0;
   /* TODO: cast double to float and back, and see if it changes.
      See cabo's ruby code for more:
      https://github.com/cabo/cbor-ruby/blob/master/ext/cbor/packer.h */
 
-  /* Note: This currently makes the tests fail */
   ensure_writable(9);
   u64.d = val;
   be64 = hton64p((const uint8_t*)&u64.u);
 
   write_byte_and_data(IB_PRIM | 27, (const void*)&be64, 8);
-  return count;
 }
 
-ssize_t cbor_encoder_write_negative(uint8_t *buf,
-                                    size_t buf_offset,
-                                    size_t buf_size,
-                                    int64_t val) {
-  // TODO: test -MININT64
-  return cbor_encoder_write_positive(buf, buf_offset, buf_size, CN_CBOR_INT, ~val);
-}
-
-// TODO: rename, or undefine
-#define ADVANCE(st) ret = (st); \
-if (ret < 0) { return -1; } \
-count += ret;
-
-// TODO: un-recurse.
-static ssize_t _write_children(uint8_t *buf,
-                               size_t buf_offset,
-                               size_t buf_size,
-                               const cn_cbor *cb){
-   ssize_t count = 0;
-   ssize_t ret = 0;
-   cn_cbor *child;
-
-   for (child=cb->first_child; child; child = child->next) {
-     ADVANCE(cbor_encoder_write(buf, buf_offset+count, buf_size, child));
-   }
-
-   return count;
-}
-
-// TODO: take out recursion
-ssize_t cbor_encoder_write(uint8_t *buf,
-                           size_t buf_offset,
-                           size_t buf_size,
-                           const cn_cbor *cb)
+// TODO: make public?
+typedef void (*cn_visit_func)(const cn_cbor *cb, int depth, void *context);
+static void _visit(const cn_cbor *cb,
+                   cn_visit_func visitor,
+                   cn_visit_func breaker,
+                   void *context)
 {
-  ssize_t count = 0;
-  ssize_t ret = 0;
+    const cn_cbor *p = cb;
+    int depth = 0;
+    while (p)
+    {
+visit:
+      visitor(p, depth, context);
+      if (p->first_child) {
+        p = p->first_child;
+        depth++;
+      } else{
+        // Empty indefinite
+        if (is_indefinite(p)) {
+          breaker(p->parent, depth, context);
+        }
+        if (p->next) {
+          p = p->next;
+        } else {
+          while (p->parent) {
+            depth--;
+            if (is_indefinite(p->parent)) {
+              breaker(p->parent, depth, context);
+            }
+            if (p->parent->next) {
+              p = p->parent->next;
+              goto visit;
+            }
+            p = p->parent;
+          }
+          return;
+        }
+      }
+    }
+}
+
+#define CHECK(st) (st); \
+if (ws->offset < 0) { return; }
+
+void _encoder_visitor(const cn_cbor *cb, int depth, void *context)
+{
+  cn_write_state *ws = context;
+  UNUSED_PARAM(depth);
 
   switch (cb->type) {
   case CN_CBOR_ARRAY:
-    if (cb->flags & CN_CBOR_FL_INDEF) {
+    if (is_indefinite(cb)) {
       write_byte(IB_ARRAY | AI_INDEF);
-      ADVANCE(_write_children(buf, buf_offset+count, buf_size, cb));
-      write_byte(IB_BREAK);
     } else {
-      ADVANCE(cbor_encoder_write_positive(buf, buf_offset, buf_size, cb->type, cb->length));
-      ADVANCE(_write_children(buf, buf_offset+count, buf_size, cb));
+      CHECK(_write_positive(ws, CN_CBOR_ARRAY, cb->length));
     }
     break;
   case CN_CBOR_MAP:
-    if (cb->flags & CN_CBOR_FL_INDEF) {
+    if (is_indefinite(cb)) {
       write_byte(IB_MAP | AI_INDEF);
-      ADVANCE(_write_children(buf, buf_offset+count, buf_size, cb));
-      write_byte(IB_BREAK);
     } else {
-      ADVANCE(cbor_encoder_write_positive(buf, buf_offset, buf_size, cb->type, cb->length/2));
-      ADVANCE(_write_children(buf, buf_offset+count, buf_size, cb));
+      CHECK(_write_positive(ws, CN_CBOR_MAP, cb->length/2));
     }
     break;
   case CN_CBOR_BYTES_CHUNKED:
   case CN_CBOR_TEXT_CHUNKED:
     write_byte(_xlate[cb->type] | AI_INDEF);
-    ADVANCE(_write_children(buf, buf_offset+count, buf_size, cb));
-    write_byte(IB_BREAK);
-    break;
-
-  case CN_CBOR_TAG:
-    ADVANCE(cbor_encoder_write_positive(buf, buf_offset, buf_size, cb->type, cb->v.uint));
-    ADVANCE(_write_children(buf, buf_offset+count, buf_size, cb));
     break;
 
   case CN_CBOR_TEXT:
   case CN_CBOR_BYTES:
-    ADVANCE(cbor_encoder_write_positive(buf, buf_offset, buf_size, cb->type, cb->length));
+    CHECK(_write_positive(ws, cb->type, cb->length));
     ensure_writable(cb->length);
-    memcpy(buf+buf_offset+count, cb->v.str, cb->length);
-    count += cb->length;
+    memcpy(ws->buf+ws->offset, cb->v.str, cb->length);
+    ws->offset += cb->length;
     break;
 
   case CN_CBOR_FALSE:
@@ -217,24 +212,44 @@ ssize_t cbor_encoder_write(uint8_t *buf,
     write_byte(_xlate[cb->type]);
     break;
 
+  case CN_CBOR_TAG:
   case CN_CBOR_UINT:
   case CN_CBOR_SIMPLE:
-    ADVANCE(cbor_encoder_write_positive(buf, buf_offset, buf_size, cb->type, cb->v.uint));
+    CHECK(_write_positive(ws, cb->type, cb->v.uint));
     break;
 
   case CN_CBOR_INT:
     assert(cb->v.sint < 0);
-    ADVANCE(cbor_encoder_write_negative(buf, buf_offset, buf_size, cb->v.sint));
+    CHECK(_write_positive(ws, CN_CBOR_INT, ~(cb->v.sint)));
     break;
+
   case CN_CBOR_DOUBLE:
-    ADVANCE(cbor_encoder_write_double(buf, buf_offset, buf_size, cb->v.dbl));
+    CHECK(_write_double(ws, cb->v.dbl));
     break;
 
   case CN_CBOR_INVALID:
-    return -1;
+    ws->offset = -1;
+    break;
   }
+}
 
-  return count;
+void _encoder_breaker(const cn_cbor *cb, int depth, void *context)
+{
+  cn_write_state *ws = context;
+  UNUSED_PARAM(cb);
+  UNUSED_PARAM(depth);
+  write_byte(IB_BREAK);
+}
+
+ssize_t cbor_encoder_write(uint8_t *buf,
+                           size_t buf_offset,
+                           size_t buf_size,
+                           const cn_cbor *cb)
+{
+  cn_write_state ws = { buf, buf_offset, buf_size };
+  _visit(cb, _encoder_visitor, _encoder_breaker, &ws);
+  if (ws.offset < 0) { return -1; }
+  return ws.offset - buf_offset;
 }
 
 #ifdef  __cplusplus
