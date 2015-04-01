@@ -266,8 +266,8 @@ CTEST(cbor, create)
 
     cn_cbor_map_put(cb_map,
                     cn_cbor_string_create("bar" CONTEXT_NULL, &err),
-                    cn_cbor_string_create("qux" CONTEXT_NULL, &err)
-                    CONTEXT_NULL, &err);
+                    cn_cbor_string_create("qux" CONTEXT_NULL, &err),
+                    &err);
     ASSERT_TRUE(err.err == CN_CBOR_NO_ERROR);
     ASSERT_TRUE(cb_map->length == 8);
 
@@ -291,7 +291,7 @@ CTEST(cbor, map_errors)
     ASSERT_EQUAL(err.err, CN_CBOR_ERR_INVALID_PARAMETER);
     cn_cbor_mapput_string(ci, "foo", NULL, CONTEXT_NULL_COMMA &err);
     ASSERT_EQUAL(err.err, CN_CBOR_ERR_INVALID_PARAMETER);
-    cn_cbor_map_put(ci, NULL, NULL, CONTEXT_NULL_COMMA &err);
+    cn_cbor_map_put(ci, NULL, NULL, &err);
 }
 
 CTEST(cbor, array)

@@ -109,10 +109,10 @@
 #define CN_FREE free
 #endif
 
+#endif // USE_CBOR_CONTEXT
+
 #ifndef UNUSED_PARAM
 #define UNUSED_PARAM(p) ((void)&(p))
 #endif
-
-#endif // USE_CBOR_CONTEXT
 
 #endif // CBOR_PROTOCOL_H__

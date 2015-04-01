@@ -322,12 +322,10 @@ cn_cbor* cn_cbor_int_create(int64_t value
  * @param[in]   cb_map       The map to insert into
  * @param[in]   key          The key
  * @param[in]   cb_value     The value
- * @param[in]   CBOR_CONTEXT Allocation context (only if USE_CBOR_CONTEXT is defined)
  * @param[out]  errp         Error
  */
 void cn_cbor_map_put(cn_cbor* cb_map,
-                     cn_cbor *cb_key, cn_cbor *cb_value
-                     CBOR_CONTEXT,
+                     cn_cbor *cb_key, cn_cbor *cb_value,
                      cn_cbor_errback *errp);
 
 /**

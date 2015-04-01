@@ -91,8 +91,7 @@ static void _append_kv(cn_cbor *cb_map, cn_cbor *key, cn_cbor *val)
 }
 
 void cn_cbor_map_put(cn_cbor* cb_map,
-                     cn_cbor *cb_key, cn_cbor *cb_value
-                     CBOR_CONTEXT,
+                     cn_cbor *cb_key, cn_cbor *cb_value,
                      cn_cbor_errback *errp)
 {
   //Make sure input is a map. Otherwise
