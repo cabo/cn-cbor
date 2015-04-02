@@ -320,3 +320,22 @@ CTEST(cbor, array_errors)
     cn_cbor_array_append(ci, NULL, &err);
     ASSERT_EQUAL(err.err, CN_CBOR_ERR_INVALID_PARAMETER);
 }
+
+CTEST(cbor, create_encode)
+{
+  cn_cbor *map;
+  cn_cbor *cdata;
+  char data[] = "data";
+  unsigned char encoded[1024];
+  ssize_t enc_sz;
+
+  map = cn_cbor_map_create(CONTEXT_NULL_COMMA NULL);
+  ASSERT_NOT_NULL(map);
+
+  cdata = cn_cbor_data_create((uint8_t*)data, sizeof(data)-1, CONTEXT_NULL_COMMA NULL);
+  ASSERT_NOT_NULL(cdata);
+
+  ASSERT_TRUE(cn_cbor_mapput_int(map, 0, cdata, CONTEXT_NULL_COMMA NULL));
+  enc_sz = cbor_encoder_write(encoded, 0, sizeof(encoded), map);
+  ASSERT_EQUAL(7, enc_sz);
+}
