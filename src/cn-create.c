@@ -124,9 +124,9 @@ void cn_cbor_mapput_int(cn_cbor* cb_map,
 }
 
 void cn_cbor_mapput_string(cn_cbor* cb_map,
-                         char* key, cn_cbor* cb_value
-                         CBOR_CONTEXT,
-                         cn_cbor_errback *errp)
+                           char* key, cn_cbor* cb_value
+                           CBOR_CONTEXT,
+                           cn_cbor_errback *errp)
 {
   cn_cbor* cb_key;
 
