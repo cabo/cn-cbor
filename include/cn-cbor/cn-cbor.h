@@ -362,7 +362,7 @@ bool cn_cbor_mapput_int(cn_cbor* cb_map,
  * @return                   True on success
  */
 bool cn_cbor_mapput_string(cn_cbor* cb_map,
-                           char* key, cn_cbor* cb_value
+                           const char* key, cn_cbor* cb_value
                            CBOR_CONTEXT,
                            cn_cbor_errback *errp);
 
