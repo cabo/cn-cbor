@@ -19,4 +19,8 @@ changes, in order to get even closer to 0.5 KiB, but I ran out of
 time.  So here it is.  If I do get around to making these changes, the
 API will indeed change a bit, so please be forewarned.
 
+There is a `Simple-Makefile` for playing around, as well as a complete
+[`cmake`](http://www.cmake.org)-based build environment.
+(You can choose what fits your needs better.)
+
 License: MIT
