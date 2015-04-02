@@ -28,8 +28,8 @@ cn_cbor* cn_cbor_map_create(CBOR_CONTEXT_COMMA cn_cbor_errback *errp)
 }
 
 cn_cbor* cn_cbor_data_create(const uint8_t* data, int len
-							               CBOR_CONTEXT,
-							               cn_cbor_errback *errp)
+                             CBOR_CONTEXT,
+                             cn_cbor_errback *errp)
 {
   cn_cbor* ret;
   INIT_CB(ret);
@@ -102,7 +102,7 @@ bool cn_cbor_map_put(cn_cbor* cb_map,
     return false;
   }
 
-	return _append_kv(cb_map, cb_key, cb_value);
+  return _append_kv(cb_map, cb_key, cb_value);
 }
 
 bool cn_cbor_mapput_int(cn_cbor* cb_map,
