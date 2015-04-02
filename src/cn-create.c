@@ -73,7 +73,7 @@ cn_cbor* cn_cbor_int_create(int64_t value
   return ret;
 }
 
-static void _append_kv(cn_cbor *cb_map, cn_cbor *key, cn_cbor *val)
+static bool _append_kv(cn_cbor *cb_map, cn_cbor *key, cn_cbor *val)
 {
   //Connect key and value and insert them into the map.
   key->parent = cb_map;
@@ -88,9 +88,10 @@ static void _append_kv(cn_cbor *cb_map, cn_cbor *key, cn_cbor *val)
   }
   cb_map->last_child = val;
   cb_map->length += 2;
+  return true;
 }
 
-void cn_cbor_map_put(cn_cbor* cb_map,
+bool cn_cbor_map_put(cn_cbor* cb_map,
                      cn_cbor *cb_key, cn_cbor *cb_value,
                      cn_cbor_errback *errp)
 {
@@ -98,13 +99,13 @@ void cn_cbor_map_put(cn_cbor* cb_map,
   if(!cb_map || !cb_key || !cb_value || cb_map->type != CN_CBOR_MAP)
   {
     if (errp) {errp->err = CN_CBOR_ERR_INVALID_PARAMETER;}
-    return;
+    return false;
   }
 
-	_append_kv(cb_map, cb_key, cb_value);
+	return _append_kv(cb_map, cb_key, cb_value);
 }
 
-void cn_cbor_mapput_int(cn_cbor* cb_map,
+bool cn_cbor_mapput_int(cn_cbor* cb_map,
                         int64_t key, cn_cbor* cb_value
                         CBOR_CONTEXT,
                         cn_cbor_errback *errp)
@@ -115,15 +116,15 @@ void cn_cbor_mapput_int(cn_cbor* cb_map,
   if(!cb_map || !cb_value || cb_map->type != CN_CBOR_MAP)
   {
     if (errp) {errp->err = CN_CBOR_ERR_INVALID_PARAMETER;}
-    return;
+    return false;
   }
 
   cb_key = cn_cbor_int_create(key CBOR_CONTEXT_PARAM, errp);
-  if (!cb_key) { return; }
-  _append_kv(cb_map, cb_key, cb_value);
+  if (!cb_key) { return false; }
+  return _append_kv(cb_map, cb_key, cb_value);
 }
 
-void cn_cbor_mapput_string(cn_cbor* cb_map,
+bool cn_cbor_mapput_string(cn_cbor* cb_map,
                            char* key, cn_cbor* cb_value
                            CBOR_CONTEXT,
                            cn_cbor_errback *errp)
@@ -134,12 +135,12 @@ void cn_cbor_mapput_string(cn_cbor* cb_map,
   if(!cb_map || !cb_value || cb_map->type != CN_CBOR_MAP)
   {
     if (errp) {errp->err = CN_CBOR_ERR_INVALID_PARAMETER;}
-    return;
+    return false;
   }
 
   cb_key = cn_cbor_string_create(key CBOR_CONTEXT_PARAM,  errp);
-  if (!cb_key) { return; }
-  _append_kv(cb_map, cb_key, cb_value);
+  if (!cb_key) { return false; }
+  return _append_kv(cb_map, cb_key, cb_value);
 }
 
 cn_cbor* cn_cbor_array_create(CBOR_CONTEXT_COMMA cn_cbor_errback *errp)
@@ -153,7 +154,7 @@ cn_cbor* cn_cbor_array_create(CBOR_CONTEXT_COMMA cn_cbor_errback *errp)
   return ret;
 }
 
-void cn_cbor_array_append(cn_cbor* cb_array,
+bool cn_cbor_array_append(cn_cbor* cb_array,
                           cn_cbor* cb_value,
                           cn_cbor_errback *errp)
 {
@@ -161,7 +162,7 @@ void cn_cbor_array_append(cn_cbor* cb_array,
   if(!cb_array || !cb_value || cb_array->type != CN_CBOR_ARRAY)
   {
     if (errp) {errp->err = CN_CBOR_ERR_INVALID_PARAMETER;}
-    return;
+    return false;
   }
 
   cb_value->parent = cb_array;
@@ -173,6 +174,7 @@ void cn_cbor_array_append(cn_cbor* cb_array,
   }
   cb_array->last_child = cb_value;
   cb_array->length++;
+  return true;
 }
 
 #ifdef  __cplusplus

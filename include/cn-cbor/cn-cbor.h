@@ -14,6 +14,7 @@ extern "C" {
 } /* Duh. */
 #endif
 
+#include <stdbool.h>
 #include <stdint.h>
 #include <unistd.h>
 
@@ -324,8 +325,9 @@ cn_cbor* cn_cbor_int_create(int64_t value
  * @param[in]   key          The key
  * @param[in]   cb_value     The value
  * @param[out]  errp         Error
+ * @return                   True on success
  */
-void cn_cbor_map_put(cn_cbor* cb_map,
+bool cn_cbor_map_put(cn_cbor* cb_map,
                      cn_cbor *cb_key, cn_cbor *cb_value,
                      cn_cbor_errback *errp);
 
@@ -338,8 +340,9 @@ void cn_cbor_map_put(cn_cbor* cb_map,
  * @param[in]   cb_value     The value
  * @param[in]   CBOR_CONTEXT Allocation context (only if USE_CBOR_CONTEXT is defined)
  * @param[out]  errp         Error
+ * @return                   True on success
  */
-void cn_cbor_mapput_int(cn_cbor* cb_map,
+bool cn_cbor_mapput_int(cn_cbor* cb_map,
                         int64_t key, cn_cbor* cb_value
                         CBOR_CONTEXT,
                         cn_cbor_errback *errp);
@@ -356,8 +359,9 @@ void cn_cbor_mapput_int(cn_cbor* cb_map,
  * @param[in]   cb_value     The value
  * @param[in]   CBOR_CONTEXT Allocation context (only if USE_CBOR_CONTEXT is defined)
  * @param[out]  errp         Error
+ * @return                   True on success
  */
-void cn_cbor_mapput_string(cn_cbor* cb_map,
+bool cn_cbor_mapput_string(cn_cbor* cb_map,
                            char* key, cn_cbor* cb_value
                            CBOR_CONTEXT,
                            cn_cbor_errback *errp);
@@ -377,8 +381,9 @@ cn_cbor* cn_cbor_array_create(CBOR_CONTEXT_COMMA cn_cbor_errback *errp);
  * @param[in]   cb_array  The array into which to insert
  * @param[in]   cb_value  The value to insert
  * @param[out]  errp      Error
+ * @return                True on success
  */
-void cn_cbor_array_append(cn_cbor* cb_array,
+bool cn_cbor_array_append(cn_cbor* cb_array,
                           cn_cbor* cb_value,
                           cn_cbor_errback *errp);
 
