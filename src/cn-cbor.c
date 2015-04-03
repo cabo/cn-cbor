@@ -13,6 +13,7 @@ extern "C" {
 #include <string.h>
 #include <assert.h>
 #include <math.h>
+#include <arpa/inet.h> // needed for ntohl (e.g.) on Linux
 
 #include "cn-cbor/cn-cbor.h"
 #include "cbor.h"
@@ -169,9 +170,10 @@ again:
     goto push;
   case MT_PRIM:
     switch (ai) {
-    case VAL_NIL: cb->type = CN_CBOR_NULL; break;
     case VAL_FALSE: cb->type = CN_CBOR_FALSE; break;
-    case VAL_TRUE: cb->type = CN_CBOR_TRUE; break;
+    case VAL_TRUE:  cb->type = CN_CBOR_TRUE;  break;
+    case VAL_NIL:   cb->type = CN_CBOR_NULL;  break;
+    case VAL_UNDEF: cb->type = CN_CBOR_UNDEF; break;
     case AI_2: cb->type = CN_CBOR_DOUBLE; cb->v.dbl = decode_half(val); break;
     case AI_4:
       cb->type = CN_CBOR_DOUBLE;
