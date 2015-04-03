@@ -111,21 +111,64 @@ static void _write_positive(cn_write_state *ws, cn_cbor_type typ, uint64_t val) 
 
 static void _write_double(cn_write_state *ws, double val)
 {
-  uint64_t be64;
-  /* Copy the same problematic implementation from the decoder. */
-  union {
-    double d;
-    uint64_t u;
-  } u64;
-  /* TODO: cast double to float and back, and see if it changes.
-     See cabo's ruby code for more:
-     https://github.com/cabo/cbor-ruby/blob/master/ext/cbor/packer.h */
+  float float_val = val;
+  if (float_val == val) {                /* 32 bits is enough and we aren't NaN */
+    uint32_t be32;
+    uint16_t be16, u16;
+    union {
+      float f;
+      uint32_t u;
+    } u32;
+    u32.f = float_val;
+    if ((u32.u & 0x1FFF) == 0) { /* worth trying half */
+      int s16 = (u32.u >> 16) & 0x8000;
+      int exp = (u32.u >> 23) & 0xff;
+      int mant = u32.u & 0x7fffff;
+      if (exp == 0 && mant == 0)
+        ;              /* 0.0, -0.0 */
+      else if (exp >= 113 && exp <= 142) /* normalized */
+        s16 += ((exp - 112) << 10) + (mant >> 13);
+      else if (exp >= 103 && exp < 113) { /* denorm, exp16 = 0 */
+        if (mant & ((1 << (126 - exp)) - 1))
+          goto float32;         /* loss of precision */
+        s16 += ((mant + 0x800000) >> (126 - exp));
+      } else if (exp == 255 && mant == 0) { /* Inf */
+        s16 += 0x7c00;
+      } else
+        goto float32;           /* loss of range */
 
-  ensure_writable(9);
-  u64.d = val;
-  be64 = hton64p((const uint8_t*)&u64.u);
+      ensure_writable(3);
+      u16 = s16;
+      be16 = hton16p((const uint8_t*)&u16);
 
-  write_byte_and_data(IB_PRIM | 27, (const void*)&be64, 8);
+      write_byte_and_data(IB_PRIM | 25, (const void*)&be16, 2);
+      return;
+    }
+  float32:
+    ensure_writable(5);
+    be32 = hton32p((const uint8_t*)&u32.u);
+
+    write_byte_and_data(IB_PRIM | 26, (const void*)&be32, 4);
+
+  } else if (val != val) {      /* NaN -- we always write a half NaN*/
+    ensure_writable(3);
+    write_byte_and_data(IB_PRIM | 25, (const void*)"\x7e\x00", 2);
+  } else {
+    uint64_t be64;
+    /* Copy the same problematic implementation from the decoder. */
+    union {
+      double d;
+      uint64_t u;
+    } u64;
+
+    u64.d = val;
+
+    ensure_writable(9);
+    be64 = hton64p((const uint8_t*)&u64.u);
+
+    write_byte_and_data(IB_PRIM | 27, (const void*)&be64, 8);
+
+  }
 }
 
 // TODO: make public?

@@ -92,8 +92,11 @@ CTEST(cbor, parse)
         "f6",	      // null
         "f7",	      // undefined
         "f8ff",     // simple(255)
+        "f93c00",     // 1.0
+        "f9bc00",     // -1.0
         "fb3ff199999999999a",     // 1.1
-        "fb7ff8000000000000",     // NaN
+//        "fb7ff8000000000000",     // NaN -- this is echoed back as "f97e00"
+        "f97e00",   // NaN
         "5f42010243030405ff",     // (_ h'0102', h'030405')
         "7f61616161ff",           // (_ "a", "a")
         "9fff",                   // [_ ]
@@ -173,11 +176,16 @@ CTEST(cbor, float)
     const cn_cbor *cb;
     buffer b;
     size_t i;
+    unsigned char encoded[1024];
+    ssize_t enc_sz;
 
     for (i=0; i<sizeof(tests)/sizeof(char*); i++) {
         ASSERT_TRUE(parse_hex(tests[i], &b));
         cb = cn_cbor_decode(b.ptr, b.sz CONTEXT_NULL, &err);
         ASSERT_NOT_NULL(cb);
+
+        enc_sz = cbor_encoder_write(encoded, 0, sizeof(encoded), cb);
+        ASSERT_DATA(b.ptr, b.sz, encoded, enc_sz);
 
         free(b.ptr);
         cn_cbor_free(cb CONTEXT_NULL);
