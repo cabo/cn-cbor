@@ -75,6 +75,7 @@ static void dump(const cn_cbor* cb, char* out, char** end, int indent) {
   case CN_CBOR_NULL:   OUT("null");                      break;
   case CN_CBOR_TRUE:   OUT("true");                      break;
   case CN_CBOR_FALSE:  OUT("false");                     break;
+  case CN_CBOR_UNDEF:  OUT("simple(23)");                break;
   case CN_CBOR_INT:    PRF("%ld", cb->v.sint);           break;
   case CN_CBOR_UINT:   PRF("%lu", cb->v.uint);           break;
   case CN_CBOR_DOUBLE: PRF("%e", cb->v.dbl);             break;
