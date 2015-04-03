@@ -46,8 +46,11 @@ memcpy(ws->buf+ws->offset, (data), (sz)); \
 ws->offset += sz;
 
 #define write_byte(b) \
-ensure_writable(1); \
 ws->buf[ws->offset++] = (b); \
+
+#define write_byte_ensured(b) \
+ensure_writable(1); \
+write_byte(b); \
 
 static uint8_t _xlate[] = {
   IB_FALSE,    /* CN_CBOR_FALSE */
@@ -223,21 +226,21 @@ void _encoder_visitor(const cn_cbor *cb, int depth, void *context)
   switch (cb->type) {
   case CN_CBOR_ARRAY:
     if (is_indefinite(cb)) {
-      write_byte(IB_ARRAY | AI_INDEF);
+      write_byte_ensured(IB_ARRAY | AI_INDEF);
     } else {
       CHECK(_write_positive(ws, CN_CBOR_ARRAY, cb->length));
     }
     break;
   case CN_CBOR_MAP:
     if (is_indefinite(cb)) {
-      write_byte(IB_MAP | AI_INDEF);
+      write_byte_ensured(IB_MAP | AI_INDEF);
     } else {
       CHECK(_write_positive(ws, CN_CBOR_MAP, cb->length/2));
     }
     break;
   case CN_CBOR_BYTES_CHUNKED:
   case CN_CBOR_TEXT_CHUNKED:
-    write_byte(_xlate[cb->type] | AI_INDEF);
+    write_byte_ensured(_xlate[cb->type] | AI_INDEF);
     break;
 
   case CN_CBOR_TEXT:
@@ -252,7 +255,7 @@ void _encoder_visitor(const cn_cbor *cb, int depth, void *context)
   case CN_CBOR_TRUE:
   case CN_CBOR_NULL:
   case CN_CBOR_UNDEF:
-    write_byte(_xlate[cb->type]);
+    write_byte_ensured(_xlate[cb->type]);
     break;
 
   case CN_CBOR_TAG:
@@ -281,7 +284,7 @@ void _encoder_breaker(const cn_cbor *cb, int depth, void *context)
   cn_write_state *ws = context;
   UNUSED_PARAM(cb);
   UNUSED_PARAM(depth);
-  write_byte(IB_BREAK);
+  write_byte_ensured(IB_BREAK);
 }
 
 ssize_t cbor_encoder_write(uint8_t *buf,
