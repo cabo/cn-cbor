@@ -145,6 +145,8 @@ CTEST(cbor, parse_normalize)
       "fbbff0000000000000", "f9bc00",   // -1.0
       "fb40f86a0000000000", "fa47c35000", // 100000.0
       "fb7ff8000000000000", "f97e00",   // NaN
+      "fb3e70000000000000", "f90001",   // 5.960464477539063e-08
+      "fb3e80000000000000", "f90002",   // 1.1920928955078125e-07
     };
     const cn_cbor *cb;
     buffer b, b2;
@@ -211,6 +213,7 @@ CTEST(cbor, float)
 {
     cn_cbor_errback err;
     char *tests[] = {
+        "f90001", // 5.960464477539063e-08
         "f9c400", // -4.0
         "fa47c35000", // 100000.0
         "f97e00", // Half NaN, half beast
