@@ -112,6 +112,7 @@ static void _write_positive(cn_write_state *ws, cn_cbor_type typ, uint64_t val) 
   }
 }
 
+#ifndef CBOR_NO_FLOAT
 static void _write_double(cn_write_state *ws, double val)
 {
   float float_val = val;
@@ -173,6 +174,7 @@ static void _write_double(cn_write_state *ws, double val)
 
   }
 }
+#endif /* CBOR_NO_FLOAT */
 
 // TODO: make public?
 typedef void (*cn_visit_func)(const cn_cbor *cb, int depth, void *context);
@@ -270,7 +272,9 @@ void _encoder_visitor(const cn_cbor *cb, int depth, void *context)
     break;
 
   case CN_CBOR_DOUBLE:
+#ifndef CBOR_NO_FLOAT
     CHECK(_write_double(ws, cb->v.dbl));
+#endif /* CBOR_NO_FLOAT */
     break;
 
   case CN_CBOR_INVALID:
