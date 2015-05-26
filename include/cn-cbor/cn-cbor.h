@@ -263,10 +263,10 @@ void cn_cbor_free(const cn_cbor* cb CBOR_CONTEXT);
  * @param[in]  cb         [description]
  * @return                -1 on fail, or number of bytes written
  */
-ssize_t cbor_encoder_write(uint8_t *buf,
-                           size_t buf_offset,
-                           size_t buf_size,
-                           const cn_cbor *cb);
+ssize_t cn_cbor_encoder_write(uint8_t *buf,
+			      size_t buf_offset,
+			      size_t buf_size,
+			      const cn_cbor *cb);
 
 /**
  * Create a CBOR map.
