@@ -125,7 +125,7 @@ CTEST(cbor, parse)
         ASSERT_EQUAL(err.err, CN_CBOR_NO_ERROR);
         ASSERT_NOT_NULL(cb);
 
-        enc_sz = cbor_encoder_write(encoded, 0, sizeof(encoded), cb);
+        enc_sz = cn_cbor_encoder_write(encoded, 0, sizeof(encoded), cb);
         ASSERT_DATA(b.ptr, b.sz, encoded, enc_sz);
         free(b.ptr);
         cn_cbor_free(cb CONTEXT_NULL);
@@ -174,7 +174,7 @@ CTEST(cbor, parse_normalize)
         ASSERT_EQUAL(err.err, CN_CBOR_NO_ERROR);
         ASSERT_NOT_NULL(cb);
 
-        enc_sz = cbor_encoder_write(encoded, 0, sizeof(encoded), cb);
+        enc_sz = cn_cbor_encoder_write(encoded, 0, sizeof(encoded), cb);
         ASSERT_DATA(b2.ptr, b2.sz, encoded, enc_sz);
         free(b.ptr);
         free(b2.ptr);
@@ -195,7 +195,7 @@ CTEST(cbor, parse_normalize)
         ASSERT_NULL(cb);
 #endif /* CBOR_NO_FLOAT */
 
-        /* enc_sz = cbor_encoder_write(encoded, 0, sizeof(encoded), cb); */
+        /* enc_sz = cn_cbor_encoder_write(encoded, 0, sizeof(encoded), cb); */
         /* ASSERT_DATA(b2.ptr, b2.sz, encoded, enc_sz); */
         free(b.ptr);
         free(b2.ptr);
@@ -227,7 +227,7 @@ CTEST(cbor, fail)
     uint8_t buf[10];
     cn_cbor inv = {CN_CBOR_INVALID, 0, {0}, 0, NULL, NULL, NULL, NULL};
 
-    ASSERT_EQUAL(-1, cbor_encoder_write(buf, 0, sizeof(buf), &inv));
+    ASSERT_EQUAL(-1, cn_cbor_encoder_write(buf, 0, sizeof(buf), &inv));
 
     for (i=0; i<sizeof(tests)/sizeof(cbor_failure); i++) {
         ASSERT_TRUE(parse_hex(tests[i].hex, &b));
@@ -264,7 +264,7 @@ CTEST(cbor, float)
         cb = cn_cbor_decode(b.ptr, b.sz CONTEXT_NULL, &err);
         ASSERT_NOT_NULL(cb);
 
-        enc_sz = cbor_encoder_write(encoded, 0, sizeof(encoded), cb);
+        enc_sz = cn_cbor_encoder_write(encoded, 0, sizeof(encoded), cb);
         ASSERT_DATA(b.ptr, b.sz, encoded, enc_sz);
 
         free(b.ptr);
@@ -425,6 +425,6 @@ CTEST(cbor, create_encode)
   ASSERT_NOT_NULL(cdata);
 
   ASSERT_TRUE(cn_cbor_mapput_int(map, 0, cdata, CONTEXT_NULL_COMMA NULL));
-  enc_sz = cbor_encoder_write(encoded, 0, sizeof(encoded), map);
+  enc_sz = cn_cbor_encoder_write(encoded, 0, sizeof(encoded), map);
   ASSERT_EQUAL(7, enc_sz);
 }

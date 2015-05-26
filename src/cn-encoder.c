@@ -291,10 +291,10 @@ void _encoder_breaker(const cn_cbor *cb, int depth, void *context)
   write_byte_ensured(IB_BREAK);
 }
 
-ssize_t cbor_encoder_write(uint8_t *buf,
-                           size_t buf_offset,
-                           size_t buf_size,
-                           const cn_cbor *cb)
+ssize_t cn_cbor_encoder_write(uint8_t *buf,
+			      size_t buf_offset,
+			      size_t buf_size,
+			      const cn_cbor *cb)
 {
   cn_write_state ws = { buf, buf_offset, buf_size };
   _visit(cb, _encoder_visitor, _encoder_breaker, &ws);
