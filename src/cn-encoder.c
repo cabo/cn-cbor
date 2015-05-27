@@ -8,9 +8,15 @@ extern "C" {
 } /* Duh. */
 #endif
 
+#ifdef _MSC_VER
+#include <WinSock2.h>
+#else
 #include <arpa/inet.h>
+#endif
 #include <string.h>
+#ifndef _MSC_VER
 #include <strings.h>
+#endif
 #include <stdbool.h>
 #include <assert.h>
 
