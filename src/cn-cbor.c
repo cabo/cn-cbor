@@ -13,7 +13,9 @@ extern "C" {
 #include <string.h>
 #include <assert.h>
 #include <math.h>
+#ifdef CBOR_CAN_DO_UNALIGNED_READS
 #include <arpa/inet.h> // needed for ntohl (e.g.) on Linux
+#endif
 
 #include "cn-cbor/cn-cbor.h"
 #include "cbor.h"
