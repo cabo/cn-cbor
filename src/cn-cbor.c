@@ -13,7 +13,11 @@ extern "C" {
 #include <string.h>
 #include <assert.h>
 #include <math.h>
+#ifdef _MSC_VER
+#include <WinSock2.h>  // needed for ntohl on Windows
+#else
 #include <arpa/inet.h> // needed for ntohl (e.g.) on Linux
+#endif
 
 #include "cn-cbor/cn-cbor.h"
 #include "cbor.h"
