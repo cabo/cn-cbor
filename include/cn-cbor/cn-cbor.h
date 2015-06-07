@@ -387,6 +387,21 @@ bool cn_cbor_array_append(cn_cbor* cb_array,
                           cn_cbor* cb_value,
                           cn_cbor_errback *errp);
 
+/**
+ * Dump the object to a file pointer
+ * If buffer is NULL, then return required size to generate output
+ *
+ * @param[in]   buffer	Location to place output
+ * @param[in]   bufferSize Size of return buffer
+ * @param[in]	fp		File pointer to print on
+ * @param[in]	cb		tree to be dumped
+ * @param[in]   indent  string to use for each level of indention
+ * @param[in]   crlf    string to use for end of line marker
+ * @return				size of output generated, -1 if buffer is too small
+ */
+
+extern ssize_t cn_cbor_printer_write(char * buffer, size_t bufferSize, const cn_cbor * cb, const char * indent, const char * crlf);
+
 #ifdef  __cplusplus
 }
 #endif

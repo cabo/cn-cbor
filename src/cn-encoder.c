@@ -35,22 +35,27 @@ typedef struct _write_state
   ssize_t size;
 } cn_write_state;
 
-#define ensure_writable(sz) if ((ws->offset<0) || (ws->offset + (sz) > ws->size)) { \
+#define ensure_writable(sz) if ((ws->buf != NULL)  && ((ws->offset<0) || (ws->offset + (sz) > ws->size))) { \
   ws->offset = -1; \
   return; \
 }
 
-#define write_byte_and_data(b, data, sz) \
-ws->buf[ws->offset++] = (b); \
-memcpy(ws->buf+ws->offset, (data), (sz)); \
-ws->offset += sz;
+inline void write_byte_and_data(cn_write_state * ws, byte b, const byte * data, size_t sz)
+{
+	if (ws->buf != NULL) {
+		ws->buf[ws->offset++] = (b);
+		memcpy(ws->buf + ws->offset, (data), (sz));
+	}
+	ws->offset += sz;
+}
 
 #define write_byte(b) \
-ws->buf[ws->offset++] = (b); \
+{ if (ws->buf == NULL) ws->offset++; \
+else ws->buf[ws->offset++] = (b); }
 
 #define write_byte_ensured(b) \
 ensure_writable(1); \
-write_byte(b); \
+write_byte(b);
 
 static uint8_t _xlate[] = {
   IB_FALSE,    /* CN_CBOR_FALSE */
@@ -98,17 +103,17 @@ static void _write_positive(cn_write_state *ws, cn_cbor_type typ, uint64_t val) 
     uint16_t be16 = (uint16_t)val;
     ensure_writable(3);
     be16 = hton16p(&be16);
-    write_byte_and_data(ib | 25, (const void*)&be16, 2);
+    write_byte_and_data(ws, ib | 25, (const void*)&be16, 2);
   } else if (val < 0x100000000L) {
     uint32_t be32 = (uint32_t)val;
     ensure_writable(5);
     be32 = hton32p(&be32);
-    write_byte_and_data(ib | 26, (const void*)&be32, 4);
+    write_byte_and_data(ws, ib | 26, (const void*)&be32, 4);
   } else {
     uint64_t be64;
     ensure_writable(9);
     be64 = hton64p((const uint8_t*)&val);
-    write_byte_and_data(ib | 27, (const void*)&be64, 8);
+    write_byte_and_data(ws, ib | 27, (const void*)&be64, 8);
   }
 }
 
@@ -144,18 +149,18 @@ static void _write_double(cn_write_state *ws, double val)
       u16 = s16;
       be16 = hton16p((const uint8_t*)&u16);
 
-      write_byte_and_data(IB_PRIM | 25, (const void*)&be16, 2);
+      write_byte_and_data(ws, IB_PRIM | 25, (const void*)&be16, 2);
       return;
     }
   float32:
     ensure_writable(5);
     be32 = hton32p((const uint8_t*)&u32.u);
 
-    write_byte_and_data(IB_PRIM | 26, (const void*)&be32, 4);
+    write_byte_and_data(ws, IB_PRIM | 26, (const void*)&be32, 4);
 
   } else if (val != val) {      /* NaN -- we always write a half NaN*/
     ensure_writable(3);
-    write_byte_and_data(IB_PRIM | 25, (const void*)"\x7e\x00", 2);
+    write_byte_and_data(ws, IB_PRIM | 25, (const void*)"\x7e\x00", 2);
   } else {
     uint64_t be64;
     /* Copy the same problematic implementation from the decoder. */
@@ -169,14 +174,14 @@ static void _write_double(cn_write_state *ws, double val)
     ensure_writable(9);
     be64 = hton64p((const uint8_t*)&u64.u);
 
-    write_byte_and_data(IB_PRIM | 27, (const void*)&be64, 8);
+    write_byte_and_data(ws, IB_PRIM | 27, (const void*)&be64, 8);
 
   }
 }
 
 // TODO: make public?
 typedef void (*cn_visit_func)(const cn_cbor *cb, int depth, void *context);
-static void _visit(const cn_cbor *cb,
+void _visit(const cn_cbor *cb,
                    cn_visit_func visitor,
                    cn_visit_func breaker,
                    void *context)
@@ -192,17 +197,25 @@ visit:
         depth++;
       } else{
         // Empty indefinite
+#ifdef CN_INCLUDE_DUMPER
+          breaker(p, depth, context);
+#else
         if (is_indefinite(p)) {
-          breaker(p->parent, depth, context);
+          breaker(p, depth, context);
         }
+#endif
         if (p->next) {
           p = p->next;
         } else {
           while (p->parent) {
             depth--;
+#ifdef CN_INCLUDE_DUMPER
+            breaker(p->parent, depth, context);
+#else
             if (is_indefinite(p->parent)) {
               breaker(p->parent, depth, context);
             }
+#endif
             if (p->parent->next) {
               p = p->parent->next;
               goto visit;
@@ -284,7 +297,13 @@ void _encoder_breaker(const cn_cbor *cb, int depth, void *context)
   cn_write_state *ws = context;
   UNUSED_PARAM(cb);
   UNUSED_PARAM(depth);
-  write_byte_ensured(IB_BREAK);
+#ifdef CN_INCLUDE_DUMPER
+  if (is_indefinite(cb)) {
+#endif
+      write_byte_ensured(IB_BREAK);
+#ifdef CN_INCLUDE_DUMPER
+  }
+#endif
 }
 
 ssize_t cbor_encoder_write(uint8_t *buf,
