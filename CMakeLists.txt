@@ -23,6 +23,7 @@ option ( fatal_warnings "Treat build warnings as errors" ON )
 option ( coveralls      "Generate coveralls data" ON )
 option ( coveralls_send "Send data to coveralls site" OFF )
 option ( build_docs "Create docs using Doxygen" ${DOXYGEN_FOUND} )
+option ( build_shared_libs "Build Shared Libraries" ON)
 
 set ( dist_dir    ${CMAKE_BINARY_DIR}/dist )
 set ( prefix      ${CMAKE_INSTALL_PREFIX} )
@@ -48,6 +49,15 @@ if (NOT CMAKE_BUILD_TYPE)
     set ( CMAKE_BUILD_TYPE Debug )
   endif ()
 endif()
+
+if ( MSVC )
+   set (coveralls OFF)
+endif ()
+
+set (LIB_TYPE STATIC)
+if (build_shared_libs)
+  set (LIB_TYPE SHARED)
+endif (build_shared_libs)
 
 message ( "Build type: ${CMAKE_BUILD_TYPE}" )
 
