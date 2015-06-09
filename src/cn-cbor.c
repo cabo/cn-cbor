@@ -19,11 +19,14 @@ extern "C" {
 #include <arpa/inet.h> // needed for ntohl (e.g.) on Linux
 #endif
 
+#include "dll-export.h"
+
 #include "cn-cbor/cn-cbor.h"
 #include "cbor.h"
 
 #define CN_CBOR_FAIL(code) do { pb->err = code;  goto fail; } while(0)
 
+MYLIB_EXPORT
 void cn_cbor_free(const cn_cbor* cb CBOR_CONTEXT) {
   cn_cbor* p = (cn_cbor*) cb;
   while (p) {
@@ -40,7 +43,7 @@ void cn_cbor_free(const cn_cbor* cb CBOR_CONTEXT) {
   }
 }
 
-static double decode_half(int half) {
+static double decode_half(uint64_t half) {
   int exp = (half >> 10) & 0x1f;
   int mant = half & 0x3ff;
   double val;
@@ -157,7 +160,7 @@ again:
     break;
   case MT_BYTES: case MT_TEXT:
     cb->v.str = (char *) pos;
-    cb->length = val;
+    cb->length = (size_t) val;
     TAKE(pos, ebuf, val, ;);
     break;
   case MT_MAP:
@@ -181,7 +184,7 @@ again:
     case AI_2: cb->type = CN_CBOR_DOUBLE; cb->v.dbl = decode_half(val); break;
     case AI_4:
       cb->type = CN_CBOR_DOUBLE;
-      u32.u = val;
+      u32.u = (uint32_t) val;
       cb->v.dbl = u32.f;
       break;
     case AI_8:
@@ -222,6 +225,7 @@ fail:
   return 0;
 }
 
+MYLIB_EXPORT
 const cn_cbor* cn_cbor_decode(const unsigned char* buf, size_t len CBOR_CONTEXT, cn_cbor_errback *errp) {
   cn_cbor catcher = {CN_CBOR_INVALID, 0, {0}, 0, NULL, NULL, NULL, NULL};
   struct parse_buf pb;

@@ -20,6 +20,7 @@ extern "C" {
 #include <stdbool.h>
 #include <assert.h>
 
+#include "dll-export.h"
 #include "cn-cbor/cn-cbor.h"
 #include "cbor.h"
 
@@ -92,7 +93,7 @@ static void _write_positive(cn_write_state *ws, cn_cbor_type typ, uint64_t val) 
 
   if (val < 24) {
     ensure_writable(1);
-    write_byte(ib | val);
+    write_byte(ib | (uint8_t) val);
   } else if (val < 256) {
     ensure_writable(2);
     write_byte(ib | 24);
@@ -247,6 +248,7 @@ void _encoder_breaker(const cn_cbor *cb, int depth, void *context)
   write_byte(IB_BREAK);
 }
 
+MYLIB_EXPORT
 ssize_t cbor_encoder_write(uint8_t *buf,
                            size_t buf_offset,
                            size_t buf_size,

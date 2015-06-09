@@ -1,0 +1,39 @@
+Running with debug output on.
+-- Could NOT find Doxygen (missing:  DOXYGEN_EXECUTABLE) 
+   Called from: [2]	c:/tools/cmake/share/cmake-3.2/Modules/FindDoxygen.cmake
+                [1]	C:/Projects/COSE/cn-cbor/implement/cn-cbor/CMakeLists.txt
+test: ON
+   Called from: [1]	C:/Projects/COSE/cn-cbor/implement/cn-cbor/CMakeLists.txt
+verbose: ON
+   Called from: [1]	C:/Projects/COSE/cn-cbor/implement/cn-cbor/CMakeLists.txt
+Lib type: SHARED
+   Called from: [1]	C:/Projects/COSE/cn-cbor/implement/cn-cbor/CMakeLists.txt
+Build type: Debug
+   Called from: [1]	C:/Projects/COSE/cn-cbor/implement/cn-cbor/CMakeLists.txt
+   Entering             C:/Projects/COSE/cn-cbor/implement/cn-cbor/include
+   Called from: [1]	C:/Projects/COSE/cn-cbor/implement/cn-cbor/CMakeLists.txt
+   Returning to         C:/Projects/COSE/cn-cbor/implement/cn-cbor
+   Called from: [1]	C:/Projects/COSE/cn-cbor/implement/cn-cbor/CMakeLists.txt
+   Entering             C:/Projects/COSE/cn-cbor/implement/cn-cbor/src
+   Called from: [1]	C:/Projects/COSE/cn-cbor/implement/cn-cbor/CMakeLists.txt
+MSVC: 1
+   Called from: [1]	C:/Projects/COSE/cn-cbor/implement/cn-cbor/src/CMakeLists.txt
+test: ON
+   Called from: [1]	C:/Projects/COSE/cn-cbor/implement/cn-cbor/src/CMakeLists.txt
+verbose: ON
+   Called from: [1]	C:/Projects/COSE/cn-cbor/implement/cn-cbor/src/CMakeLists.txt
+COVERALLS UPLOAD: OFF
+   Called from: [1]	C:/Projects/COSE/cn-cbor/implement/cn-cbor/src/CMakeLists.txt
+   Returning to         C:/Projects/COSE/cn-cbor/implement/cn-cbor
+   Called from: [1]	C:/Projects/COSE/cn-cbor/implement/cn-cbor/CMakeLists.txt
+   Entering             C:/Projects/COSE/cn-cbor/implement/cn-cbor/test
+   Called from: [1]	C:/Projects/COSE/cn-cbor/implement/cn-cbor/CMakeLists.txt
+   Returning to         C:/Projects/COSE/cn-cbor/implement/cn-cbor
+   Called from: [1]	C:/Projects/COSE/cn-cbor/implement/cn-cbor/CMakeLists.txt
+-- Configuring done
+-- Generating C:/Projects/COSE/cn-cbor/implement/cn-cbor
+-- Generating C:/Projects/COSE/cn-cbor/implement/cn-cbor/include
+-- Generating C:/Projects/COSE/cn-cbor/implement/cn-cbor/src
+-- Generating C:/Projects/COSE/cn-cbor/implement/cn-cbor/test
+-- Generating done
+-- Build files have been written to: C:/Projects/COSE/cn-cbor/implement/cn-cbor

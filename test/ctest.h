@@ -16,6 +16,14 @@
 #ifndef CTEST_H
 #define CTEST_H
 
+#ifdef _MSC_VER
+#define snprintf _snprintf
+#pragma section(".ctest")
+
+#include <io.h>
+#define isatty _isatty
+#endif
+
 #ifndef UNUSED_PARAM
   /**
    * \def UNUSED_PARAM(p);
@@ -48,10 +56,16 @@ struct ctest {
 #ifdef __APPLE__
 #define __Test_Section __attribute__ ((unused,section ("__DATA, .ctest")))
 #else
+#ifdef _MSC_VER
+#define __Test_Section
+#define MS__Test_Section __declspec(allocate(".ctest"))
+#else
 #define __Test_Section __attribute__ ((unused,section (".ctest")))
+#endif
 #endif
 
 #define __CTEST_STRUCT(sname, tname, _skip, __data, __setup, __teardown) \
+	MS__Test_Section \
     struct ctest __TNAME(sname, tname) __Test_Section = { \
         .ssname=#sname, \
         .ttname=#tname, \
@@ -138,9 +152,13 @@ void assert_fail(const char* caller, int line);
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
+#ifndef _MSC_VER
 #include <sys/time.h>
+#endif
 #include <inttypes.h>
+#ifndef _MSC_VER
 #include <unistd.h>
+#endif
 #include <stdint.h>
 #include <stdlib.h>
 
@@ -306,6 +324,27 @@ static int suite_filter(struct ctest* t) {
     return strncmp(suite_name, t->ssname, strlen(suite_name)) == 0;
 }
 
+#ifdef _MSC_VER
+int gettimeofday(struct timeval * tp, struct timezone * tzp)
+{
+	// Note: some broken versions only have 8 trailing zero's, the correct epoch has 9 trailing zero's
+	static const uint64_t EPOCH = ((uint64_t)116444736000000000ULL);
+
+	SYSTEMTIME  system_time;
+	FILETIME    file_time;
+	uint64_t    time;
+
+	GetSystemTime(&system_time);
+	SystemTimeToFileTime(&system_time, &file_time);
+	time = ((uint64_t)file_time.dwLowDateTime);
+	time += ((uint64_t)file_time.dwHighDateTime) << 32;
+
+	tp->tv_sec = (long)((time - EPOCH) / 10000000L);
+	tp->tv_usec = (long)(system_time.wMilliseconds * 1000);
+	return 0;
+}
+#endif
+
 static uint64_t getCurrentTime() {
     struct timeval now;
     gettimeofday(&now, NULL);
@@ -377,6 +416,7 @@ int ctest_main(int argc, const char *argv[])
     }
 
     color_output = isatty(1);
+
     uint64_t t1 = getCurrentTime();
 
     struct ctest* ctest_begin = &__TNAME(suite, test);

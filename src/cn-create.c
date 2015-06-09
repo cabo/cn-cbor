@@ -8,6 +8,7 @@ extern "C" {
 #include <string.h>
 #include <stdlib.h>
 
+#include "dll-export.h"
 #include "cn-cbor/cn-cbor.h"
 #include "cbor.h"
 
@@ -16,6 +17,7 @@ extern "C" {
   (v) = CN_CALLOC_CONTEXT(); \
   if (!(v)) { if (errp) {errp->err = CN_CBOR_ERR_OUT_OF_MEMORY;} return NULL; }
 
+MYLIB_EXPORT
 cn_cbor* cn_cbor_map_create(CBOR_CONTEXT_COMMA cn_cbor_errback *errp)
 {
   cn_cbor* ret;
@@ -27,6 +29,7 @@ cn_cbor* cn_cbor_map_create(CBOR_CONTEXT_COMMA cn_cbor_errback *errp)
   return ret;
 }
 
+MYLIB_EXPORT
 cn_cbor* cn_cbor_data_create(const uint8_t* data, int len
                              CBOR_CONTEXT,
                              cn_cbor_errback *errp)
@@ -41,6 +44,7 @@ cn_cbor* cn_cbor_data_create(const uint8_t* data, int len
   return ret;
 }
 
+MYLIB_EXPORT
 cn_cbor* cn_cbor_string_create(const char* data
                                CBOR_CONTEXT,
                                cn_cbor_errback *errp)
@@ -55,6 +59,7 @@ cn_cbor* cn_cbor_string_create(const char* data
   return ret;
 }
 
+MYLIB_EXPORT
 cn_cbor* cn_cbor_int_create(int64_t value
                             CBOR_CONTEXT,
                             cn_cbor_errback *errp)
@@ -91,6 +96,7 @@ static bool _append_kv(cn_cbor *cb_map, cn_cbor *key, cn_cbor *val)
   return true;
 }
 
+MYLIB_EXPORT
 bool cn_cbor_map_put(cn_cbor* cb_map,
                      cn_cbor *cb_key, cn_cbor *cb_value,
                      cn_cbor_errback *errp)
@@ -105,6 +111,7 @@ bool cn_cbor_map_put(cn_cbor* cb_map,
   return _append_kv(cb_map, cb_key, cb_value);
 }
 
+MYLIB_EXPORT
 bool cn_cbor_mapput_int(cn_cbor* cb_map,
                         int64_t key, cn_cbor* cb_value
                         CBOR_CONTEXT,
@@ -124,6 +131,7 @@ bool cn_cbor_mapput_int(cn_cbor* cb_map,
   return _append_kv(cb_map, cb_key, cb_value);
 }
 
+MYLIB_EXPORT
 bool cn_cbor_mapput_string(cn_cbor* cb_map,
                            char* key, cn_cbor* cb_value
                            CBOR_CONTEXT,
@@ -143,6 +151,7 @@ bool cn_cbor_mapput_string(cn_cbor* cb_map,
   return _append_kv(cb_map, cb_key, cb_value);
 }
 
+MYLIB_EXPORT
 cn_cbor* cn_cbor_array_create(CBOR_CONTEXT_COMMA cn_cbor_errback *errp)
 {
   cn_cbor* ret;
@@ -154,6 +163,7 @@ cn_cbor* cn_cbor_array_create(CBOR_CONTEXT_COMMA cn_cbor_errback *errp)
   return ret;
 }
 
+MYLIB_EXPORT
 bool cn_cbor_array_append(cn_cbor* cb_array,
                           cn_cbor* cb_value,
                           cn_cbor_errback *errp)

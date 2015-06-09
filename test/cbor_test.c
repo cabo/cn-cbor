@@ -1,12 +1,22 @@
 /*
  * Copyright (c) 2015 SPUDlib authors.  See LICENSE file.
  */
+
+#ifdef _MSC_VER
+#define _CRT_SECURE_NO_WARNINGS
+#define _CRTDBG_MAP_ALLOC
+#include <crtdbg.h>
+#endif
+
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <assert.h>
 #include <string.h>
+#ifdef _MSC_VER
+#include "winsock2.h"
+#endif
 
 #include "cn-cbor/cn-cbor.h"
 
@@ -43,7 +53,13 @@ static bool parse_hex(char *inp, buffer *b)
     b->sz  = len / 2;
     b->ptr = malloc(b->sz);
     for (i=0; i<b->sz; i++) {
+#ifdef _MSC_VER
+		unsigned int iX;
+		sscanf(inp+(2*i), "%02hx", &iX);
+		b->ptr[i] = (byte)iX;
+#else
         sscanf(inp+(2*i), "%02hhx", &b->ptr[i]);
+#endif
     }
     return true;
 }
