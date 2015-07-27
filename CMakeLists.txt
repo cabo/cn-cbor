@@ -24,6 +24,7 @@ option ( coveralls      "Generate coveralls data" ON )
 option ( coveralls_send "Send data to coveralls site" OFF )
 option ( build_docs "Create docs using Doxygen" ${DOXYGEN_FOUND} )
 option ( build_shared_libs "Build Shared Libraries" ON)
+option ( no_floats "Build without floating point support" OFF )
 
 set ( dist_dir    ${CMAKE_BINARY_DIR}/dist )
 set ( prefix      ${CMAKE_INSTALL_PREFIX} )
@@ -79,6 +80,10 @@ elseif ( MSVC )
 else ()
   message ( FATAL_ERROR "unhandled compiler id: ${CMAKE_C_COMPILER_ID}" )
 endif ()
+
+if ( no_floats )
+   add_definitions(-DCBOR_NO_FLOAT)
+endif()
 
 if ( verbose )
   set ( CMAKE_VERBOSE_MAKEFILE ON )

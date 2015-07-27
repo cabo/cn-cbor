@@ -163,7 +163,10 @@ typedef enum cn_cbor_error {
   /** An invalid parameter was passed to a function */
   CN_CBOR_ERR_INVALID_PARAMETER,
   /** Allocation failed */
-  CN_CBOR_ERR_OUT_OF_MEMORY
+  CN_CBOR_ERR_OUT_OF_MEMORY,
+  /** A float was encountered during parse but the library was built without
+      support for float types. */
+  CN_CBOR_ERR_FLOAT_NOT_SUPPORTED
 } cn_cbor_error;
 
 /**
@@ -298,11 +301,10 @@ void cn_cbor_free(const cn_cbor* cb CBOR_CONTEXT);
  * @param[in]  cb         [description]
  * @return                -1 on fail, or number of bytes written
  */
-MYLIB_EXPORT
-ssize_t cbor_encoder_write(uint8_t *buf,
-                           size_t buf_offset,
-                           size_t buf_size,
-                           const cn_cbor *cb);
+ssize_t cn_cbor_encoder_write(uint8_t *buf,
+			      size_t buf_offset,
+			      size_t buf_size,
+			      const cn_cbor *cb);
 
 /**
  * Create a CBOR map.
@@ -408,7 +410,7 @@ bool cn_cbor_mapput_int(cn_cbor* cb_map,
  */
 MYLIB_EXPORT
 bool cn_cbor_mapput_string(cn_cbor* cb_map,
-                           char* key, cn_cbor* cb_value
+                           const char* key, cn_cbor* cb_value
                            CBOR_CONTEXT,
                            cn_cbor_errback *errp);
 

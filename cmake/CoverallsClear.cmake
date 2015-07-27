@@ -20,5 +20,7 @@
 # Copyright (C) 2014 Joakim Söderberg <joakim.soderberg@gmail.com>
 #
 
+message ( "Clearing coverage data" )
 file(REMOVE_RECURSE ${PROJECT_BINARY_DIR}/*.gcda)
-
+file(REMOVE ${PROJECT_BINARY_DIR}/*.gcov)
+file(REMOVE ${PROJECT_BINARY_DIR}/*.gcov_tmp)

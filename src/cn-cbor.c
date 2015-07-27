@@ -43,7 +43,12 @@ void cn_cbor_free(const cn_cbor* cb CBOR_CONTEXT) {
   }
 }
 
+<<<<<<< HEAD
 static double decode_half(uint64_t half) {
+=======
+#ifndef CBOR_NO_FLOAT
+static double decode_half(int half) {
+>>>>>>> cabo/master
   int exp = (half >> 10) & 0x1f;
   int mant = half & 0x3ff;
   double val;
@@ -52,6 +57,7 @@ static double decode_half(uint64_t half) {
   else val = mant == 0 ? INFINITY : NAN;
   return half & 0x8000 ? -val : val;
 }
+#endif /* CBOR_NO_FLOAT */
 
 /* Fix these if you can't do non-aligned reads */
 #define ntoh8p(p) (*(unsigned char*)(p))
@@ -92,6 +98,7 @@ static cn_cbor *decode_item (struct parse_buf *pb CBOR_CONTEXT, cn_cbor* top_par
   int ai;
   uint64_t val;
   cn_cbor* cb = NULL;
+#ifndef CBOR_NO_FLOAT
   union {
     float f;
     uint32_t u;
@@ -100,6 +107,7 @@ static cn_cbor *decode_item (struct parse_buf *pb CBOR_CONTEXT, cn_cbor* top_par
     double d;
     uint64_t u;
   } u64;
+#endif /* CBOR_NO_FLOAT */
 
 again:
   TAKE(pos, ebuf, 1, ib = ntoh8p(pos) );
@@ -181,16 +189,31 @@ again:
     case VAL_TRUE:  cb->type = CN_CBOR_TRUE;  break;
     case VAL_NIL:   cb->type = CN_CBOR_NULL;  break;
     case VAL_UNDEF: cb->type = CN_CBOR_UNDEF; break;
-    case AI_2: cb->type = CN_CBOR_DOUBLE; cb->v.dbl = decode_half(val); break;
+    case AI_2:
+#ifndef CBOR_NO_FLOAT
+      cb->type = CN_CBOR_DOUBLE;
+      cb->v.dbl = decode_half(val);
+#else /*  CBOR_NO_FLOAT */
+      CN_CBOR_FAIL(CN_CBOR_ERR_FLOAT_NOT_SUPPORTED);
+#endif /*  CBOR_NO_FLOAT */
+      break;
     case AI_4:
+#ifndef CBOR_NO_FLOAT
       cb->type = CN_CBOR_DOUBLE;
       u32.u = (uint32_t) val;
       cb->v.dbl = u32.f;
+#else /*  CBOR_NO_FLOAT */
+      CN_CBOR_FAIL(CN_CBOR_ERR_FLOAT_NOT_SUPPORTED);
+#endif /*  CBOR_NO_FLOAT */
       break;
     case AI_8:
+#ifndef CBOR_NO_FLOAT
       cb->type = CN_CBOR_DOUBLE;
       u64.u = val;
       cb->v.dbl = u64.d;
+#else /*  CBOR_NO_FLOAT */
+      CN_CBOR_FAIL(CN_CBOR_ERR_FLOAT_NOT_SUPPORTED);
+#endif /*  CBOR_NO_FLOAT */
       break;
     default: cb->v.uint = val;
     }

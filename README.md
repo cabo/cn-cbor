@@ -29,4 +29,14 @@ Building with `cmake`:
 
     ./build.sh
 
+Building including testing:
+
+    ./build.sh all test
+
+Generating a test coverage report (requires lcov[^1]; result in `build/lcov/index.html`):
+
+    ./build.sh all coveralls coverage_report
+
 License: MIT
+
+[^1]: Installation with homebrew: `brew install lcov`

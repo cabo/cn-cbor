@@ -56,6 +56,10 @@ ws->offset += sz;
 ensure_writable(1); \
 ws->buf[ws->offset++] = (b); \
 
+#define write_byte_ensured(b) \
+ensure_writable(1); \
+write_byte(b); \
+
 static uint8_t _xlate[] = {
   IB_FALSE,    /* CN_CBOR_FALSE */
   IB_TRUE,     /* CN_CBOR_TRUE */
@@ -116,24 +120,69 @@ static void _write_positive(cn_write_state *ws, cn_cbor_type typ, uint64_t val) 
   }
 }
 
+#ifndef CBOR_NO_FLOAT
 static void _write_double(cn_write_state *ws, double val)
 {
-  uint64_t be64;
-  /* Copy the same problematic implementation from the decoder. */
-  union {
-    double d;
-    uint64_t u;
-  } u64;
-  /* TODO: cast double to float and back, and see if it changes.
-     See cabo's ruby code for more:
-     https://github.com/cabo/cbor-ruby/blob/master/ext/cbor/packer.h */
+  float float_val = val;
+  if (float_val == val) {                /* 32 bits is enough and we aren't NaN */
+    uint32_t be32;
+    uint16_t be16, u16;
+    union {
+      float f;
+      uint32_t u;
+    } u32;
+    u32.f = float_val;
+    if ((u32.u & 0x1FFF) == 0) { /* worth trying half */
+      int s16 = (u32.u >> 16) & 0x8000;
+      int exp = (u32.u >> 23) & 0xff;
+      int mant = u32.u & 0x7fffff;
+      if (exp == 0 && mant == 0)
+        ;              /* 0.0, -0.0 */
+      else if (exp >= 113 && exp <= 142) /* normalized */
+        s16 += ((exp - 112) << 10) + (mant >> 13);
+      else if (exp >= 103 && exp < 113) { /* denorm, exp16 = 0 */
+        if (mant & ((1 << (126 - exp)) - 1))
+          goto float32;         /* loss of precision */
+        s16 += ((mant + 0x800000) >> (126 - exp));
+      } else if (exp == 255 && mant == 0) { /* Inf */
+        s16 += 0x7c00;
+      } else
+        goto float32;           /* loss of range */
 
-  ensure_writable(9);
-  u64.d = val;
-  be64 = hton64p((const uint8_t*)&u64.u);
+      ensure_writable(3);
+      u16 = s16;
+      be16 = hton16p((const uint8_t*)&u16);
 
-  write_byte_and_data(IB_PRIM | 27, (const void*)&be64, 8);
+      write_byte_and_data(IB_PRIM | 25, (const void*)&be16, 2);
+      return;
+    }
+  float32:
+    ensure_writable(5);
+    be32 = hton32p((const uint8_t*)&u32.u);
+
+    write_byte_and_data(IB_PRIM | 26, (const void*)&be32, 4);
+
+  } else if (val != val) {      /* NaN -- we always write a half NaN*/
+    ensure_writable(3);
+    write_byte_and_data(IB_PRIM | 25, (const void*)"\x7e\x00", 2);
+  } else {
+    uint64_t be64;
+    /* Copy the same problematic implementation from the decoder. */
+    union {
+      double d;
+      uint64_t u;
+    } u64;
+
+    u64.d = val;
+
+    ensure_writable(9);
+    be64 = hton64p((const uint8_t*)&u64.u);
+
+    write_byte_and_data(IB_PRIM | 27, (const void*)&be64, 8);
+
+  }
 }
+#endif /* CBOR_NO_FLOAT */
 
 // TODO: make public?
 typedef void (*cn_visit_func)(const cn_cbor *cb, int depth, void *context);
@@ -187,21 +236,21 @@ void _encoder_visitor(const cn_cbor *cb, int depth, void *context)
   switch (cb->type) {
   case CN_CBOR_ARRAY:
     if (is_indefinite(cb)) {
-      write_byte(IB_ARRAY | AI_INDEF);
+      write_byte_ensured(IB_ARRAY | AI_INDEF);
     } else {
       CHECK(_write_positive(ws, CN_CBOR_ARRAY, cb->length));
     }
     break;
   case CN_CBOR_MAP:
     if (is_indefinite(cb)) {
-      write_byte(IB_MAP | AI_INDEF);
+      write_byte_ensured(IB_MAP | AI_INDEF);
     } else {
       CHECK(_write_positive(ws, CN_CBOR_MAP, cb->length/2));
     }
     break;
   case CN_CBOR_BYTES_CHUNKED:
   case CN_CBOR_TEXT_CHUNKED:
-    write_byte(_xlate[cb->type] | AI_INDEF);
+    write_byte_ensured(_xlate[cb->type] | AI_INDEF);
     break;
 
   case CN_CBOR_TEXT:
@@ -216,7 +265,7 @@ void _encoder_visitor(const cn_cbor *cb, int depth, void *context)
   case CN_CBOR_TRUE:
   case CN_CBOR_NULL:
   case CN_CBOR_UNDEF:
-    write_byte(_xlate[cb->type]);
+    write_byte_ensured(_xlate[cb->type]);
     break;
 
   case CN_CBOR_TAG:
@@ -231,7 +280,9 @@ void _encoder_visitor(const cn_cbor *cb, int depth, void *context)
     break;
 
   case CN_CBOR_DOUBLE:
+#ifndef CBOR_NO_FLOAT
     CHECK(_write_double(ws, cb->v.dbl));
+#endif /* CBOR_NO_FLOAT */
     break;
 
   case CN_CBOR_INVALID:
@@ -245,14 +296,13 @@ void _encoder_breaker(const cn_cbor *cb, int depth, void *context)
   cn_write_state *ws = context;
   UNUSED_PARAM(cb);
   UNUSED_PARAM(depth);
-  write_byte(IB_BREAK);
+  write_byte_ensured(IB_BREAK);
 }
 
-MYLIB_EXPORT
-ssize_t cbor_encoder_write(uint8_t *buf,
-                           size_t buf_offset,
-                           size_t buf_size,
-                           const cn_cbor *cb)
+ssize_t cn_cbor_encoder_write(uint8_t *buf,
+			      size_t buf_offset,
+			      size_t buf_size,
+			      const cn_cbor *cb)
 {
   cn_write_state ws = { buf, buf_offset, buf_size };
   _visit(cb, _encoder_visitor, _encoder_breaker, &ws);

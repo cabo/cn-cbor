@@ -75,6 +75,7 @@ static void dump(const cn_cbor* cb, char* out, char** end, int indent) {
   case CN_CBOR_NULL:   OUT("null");                      break;
   case CN_CBOR_TRUE:   OUT("true");                      break;
   case CN_CBOR_FALSE:  OUT("false");                     break;
+  case CN_CBOR_UNDEF:  OUT("simple(23)");                break;
   case CN_CBOR_INT:    PRF("%ld", cb->v.sint);           break;
   case CN_CBOR_UINT:   PRF("%lu", cb->v.uint);           break;
   case CN_CBOR_DOUBLE: PRF("%e", cb->v.dbl);             break;
@@ -97,6 +98,7 @@ const char *err_name[] = {
   "CN_CBOR_ERR_RESERVED_AI",
   "CN_CBOR_ERR_WRONG_NESTING_IN_INDEF_STRING",
   "CN_CBOR_ERR_OUT_OF_MEMORY",
+  "CN_CBOR_ERR_FLOAT_NOT_SUPPORTED",
 };
 
 static void cn_cbor_decode_test(const unsigned char *buf, int len) {
