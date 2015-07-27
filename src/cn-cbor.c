@@ -43,12 +43,8 @@ void cn_cbor_free(const cn_cbor* cb CBOR_CONTEXT) {
   }
 }
 
-<<<<<<< HEAD
-static double decode_half(uint64_t half) {
-=======
 #ifndef CBOR_NO_FLOAT
 static double decode_half(int half) {
->>>>>>> cabo/master
   int exp = (half >> 10) & 0x1f;
   int mant = half & 0x3ff;
   double val;
