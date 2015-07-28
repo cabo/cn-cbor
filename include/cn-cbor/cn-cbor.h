@@ -9,11 +9,11 @@
 
 #ifndef MYLIB_EXPORT
 #if defined (_WIN32) 
-#if defined(cn_cbor_EXPORTS)
-#define  MYLIB_EXPORT __declspec(dllexport)
-#else
+#if defined(CN_CBOR_IS_DLL)
 #define  MYLIB_EXPORT __declspec(dllimport)
-#endif /* cn_cbor_EXPORTS */
+#else
+#define MYLIB_EXPORT
+#endif /* CN_CBOR_IS_DLL */
 #else /* defined (_WIN32) */
 #define MYLIB_EXPORT
 #endif 

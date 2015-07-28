@@ -11,10 +11,10 @@ building a DLL on windows.
 // We are using the Visual Studio Compiler and building Shared libraries
 
 #if defined (_WIN32) 
-#if defined(cn_cbor_EXPORTS)
+#if defined(CN_CBOR_IS_DLL)
     #define  MYLIB_EXPORT __declspec(dllexport)
 #else
-    #define  MYLIB_EXPORT __declspec(dllimport)
+    #define MYLIB_EXPORT
 #endif /* cn_cbor_EXPORTS */
 #else /* defined (_WIN32) */
  #define MYLIB_EXPORT
