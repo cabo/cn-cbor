@@ -16,7 +16,12 @@ extern "C" {
 
 #include <stdbool.h>
 #include <stdint.h>
+#ifdef _MSC_VER
+#include <WinSock2.h>
+typedef long ssize_t;
+#else
 #include <unistd.h>
+#endif
 
 /**
  * All of the different kinds of CBOR values.

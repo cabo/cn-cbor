@@ -2,3 +2,19 @@ cntest
 new.out
 *.o
 build
+
+# Emacs temp files
+*~
+
+# Visual Stdio build directories
+Debug
+Release
+*.vcxproj
+*.vcxproj.filters
+
+# Output of CMake
+CMakeCache.txt
+CMakeFiles
+Makefile
+*.cmake
+install_manifest.txt
