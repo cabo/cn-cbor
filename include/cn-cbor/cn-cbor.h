@@ -247,8 +247,10 @@ cn_cbor* cn_cbor_index(const cn_cbor* cb, unsigned int idx);
 
 /**
  * Free the given CBOR structure.
+ * You MUST NOT try to free a cn_cbor structure with a parent (i.e., one
+ * that is not a root in the tree).
  *
- * @param[in]  cb           The CBOR value to free
+ * @param[in]  cb           The CBOR value to free.  May be NULL, or a root object.
  * @param[in]  CBOR_CONTEXT Allocation context (only if USE_CBOR_CONTEXT is defined)
  */
 void cn_cbor_free(cn_cbor* cb CBOR_CONTEXT);
