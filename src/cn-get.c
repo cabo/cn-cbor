@@ -4,7 +4,7 @@
 
 #include "cn-cbor/cn-cbor.h"
 
-const cn_cbor* cn_cbor_mapget_int(const cn_cbor* cb, int key) {
+cn_cbor* cn_cbor_mapget_int(const cn_cbor* cb, int key) {
   cn_cbor* cp;
   assert(cb);
   for (cp = cb->first_child; cp && cp->next; cp = cp->next->next) {
@@ -25,7 +25,7 @@ const cn_cbor* cn_cbor_mapget_int(const cn_cbor* cb, int key) {
   return NULL;
 }
 
-const cn_cbor* cn_cbor_mapget_string(const cn_cbor* cb, const char* key) {
+cn_cbor* cn_cbor_mapget_string(const cn_cbor* cb, const char* key) {
   cn_cbor *cp;
   int keylen;
   assert(cb);
@@ -48,7 +48,7 @@ const cn_cbor* cn_cbor_mapget_string(const cn_cbor* cb, const char* key) {
   return NULL;
 }
 
-const cn_cbor* cn_cbor_index(const cn_cbor* cb, unsigned int idx) {
+cn_cbor* cn_cbor_index(const cn_cbor* cb, unsigned int idx) {
   cn_cbor *cp;
   unsigned int i = 0;
   assert(cb);
