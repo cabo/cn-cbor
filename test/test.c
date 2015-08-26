@@ -115,7 +115,7 @@ int main() {
   char *bufend;
   unsigned char *s = load_file("cases.cbor", &end);
   printf("%zd\n", end-s);
-  const cn_cbor *cb = cn_cbor_decode(s, end-s CBOR_CONTEXT_PARAM, 0);
+  cn_cbor *cb = cn_cbor_decode(s, end-s CBOR_CONTEXT_PARAM, 0);
   if (cb) {
     dump(cb, buf, &bufend, 0);
     *bufend = 0;
