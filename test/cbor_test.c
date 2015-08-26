@@ -111,7 +111,7 @@ CTEST(cbor, parse)
         "9f009f00ff00ff",         // [_ 0, [_ 0], 0]
         "bf61610161629f0203ffff", // {_ "a": 1, "b": [_ 2, 3]}
     };
-    const cn_cbor *cb;
+    cn_cbor *cb;
     buffer b;
     size_t i;
     unsigned char encoded[1024];
@@ -159,7 +159,7 @@ CTEST(cbor, parse_normalize)
       "fb3e78000000000000", "fa33c00000", //  8.940696716308594e-08
       "fb3e80000000000000", "f90002",   // 1.1920928955078125e-07
     };
-    const cn_cbor *cb;
+    cn_cbor *cb;
     buffer b, b2;
     size_t i;
     unsigned char encoded[1024];
@@ -221,7 +221,7 @@ CTEST(cbor, fail)
         {"1c", CN_CBOR_ERR_RESERVED_AI},
         {"7f4100", CN_CBOR_ERR_WRONG_NESTING_IN_INDEF_STRING},
     };
-    const cn_cbor *cb;
+    cn_cbor *cb;
     buffer b;
     size_t i;
     uint8_t buf[10];
@@ -253,7 +253,7 @@ CTEST(cbor, float)
         "f9fc00", // -Inf
         "f97c00", // Inf
     };
-    const cn_cbor *cb;
+    cn_cbor *cb;
     buffer b;
     size_t i;
     unsigned char encoded[1024];
@@ -276,8 +276,8 @@ CTEST(cbor, float)
 CTEST(cbor, getset)
 {
     buffer b;
-    const cn_cbor *cb;
-    const cn_cbor *val;
+    cn_cbor *cb;
+    cn_cbor *val;
     cn_cbor_errback err;
 
     ASSERT_TRUE(parse_hex("a40000436363630262626201616100", &b));
