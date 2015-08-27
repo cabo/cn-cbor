@@ -24,8 +24,9 @@ extern "C" {
 
 #define CN_CBOR_FAIL(code) do { pb->err = code;  goto fail; } while(0)
 
-void cn_cbor_free(const cn_cbor* cb CBOR_CONTEXT) {
-  cn_cbor* p = (cn_cbor*) cb;
+void cn_cbor_free(cn_cbor* cb CBOR_CONTEXT) {
+  cn_cbor* p = cb;
+  assert(!p || !p->parent);
   while (p) {
     cn_cbor* p1;
     while ((p1 = p->first_child)) { /* go down */
@@ -241,7 +242,7 @@ fail:
   return 0;
 }
 
-const cn_cbor* cn_cbor_decode(const unsigned char* buf, size_t len CBOR_CONTEXT, cn_cbor_errback *errp) {
+cn_cbor* cn_cbor_decode(const unsigned char* buf, size_t len CBOR_CONTEXT, cn_cbor_errback *errp) {
   cn_cbor catcher = {CN_CBOR_INVALID, 0, {0}, 0, NULL, NULL, NULL, NULL};
   struct parse_buf pb;
   cn_cbor* ret;
