@@ -2,5 +2,20 @@ cntest
 new.out
 *.o
 build
+
+# Files from Visual Studio Builds
 Debug
+Release
+
+# Files from emacs
 *~
+.#*
+*#
+
+# files from cmake
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
+CMakeFiles
+CMakeCache.txt
+*.cmake
