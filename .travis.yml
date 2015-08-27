@@ -1,0 +1,14 @@
+language: c
+compiler:
+- clang
+- gcc
+env:
+- COVERAGE=true
+- COVERAGE=false;
+before_install:
+- sudo pip install cpp-coveralls
+- wget http://www.cmake.org/files/v3.3/cmake-3.3.1-Linux-x86_64.tar.gz  -O /tmp/cmake.tar.gz
+- tar xzf /tmp/cmake.tar.gz
+- export PATH=$PWD/cmake-3.3.1-Linux-x86_64/bin/:$PATH
+script:
+- ./build.sh all test
