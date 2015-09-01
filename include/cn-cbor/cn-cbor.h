@@ -131,7 +131,10 @@ typedef enum cn_cbor_error {
   /** An invalid parameter was passed to a function */
   CN_CBOR_ERR_INVALID_PARAMETER,
   /** Allocation failed */
-  CN_CBOR_ERR_OUT_OF_MEMORY
+  CN_CBOR_ERR_OUT_OF_MEMORY,
+  /** A float was encountered during parse but the library was built without
+      support for float types. */
+  CN_CBOR_ERR_FLOAT_NOT_SUPPORTED
 } cn_cbor_error;
 
 /**
@@ -213,7 +216,7 @@ typedef struct cn_cbor_context {
  * @param[out] errp         Error, if NULL is returned
  * @return                  The parsed CBOR structure, or NULL on error
  */
-const cn_cbor* cn_cbor_decode(const uint8_t *buf, size_t len CBOR_CONTEXT, cn_cbor_errback *errp);
+cn_cbor* cn_cbor_decode(const uint8_t *buf, size_t len CBOR_CONTEXT, cn_cbor_errback *errp);
 
 /**
  * Get a value from a CBOR map that has the given string as a key.
@@ -222,7 +225,7 @@ const cn_cbor* cn_cbor_decode(const uint8_t *buf, size_t len CBOR_CONTEXT, cn_cb
  * @param[in]  key          The string to look up in the map
  * @return                  The matching value, or NULL if the key is not found
  */
-const cn_cbor* cn_cbor_mapget_string(const cn_cbor* cb, const char* key);
+cn_cbor* cn_cbor_mapget_string(const cn_cbor* cb, const char* key);
 
 /**
  * Get a value from a CBOR map that has the given integer as a key.
@@ -231,7 +234,7 @@ const cn_cbor* cn_cbor_mapget_string(const cn_cbor* cb, const char* key);
  * @param[in]  key          The int to look up in the map
  * @return                  The matching value, or NULL if the key is not found
  */
-const cn_cbor* cn_cbor_mapget_int(const cn_cbor* cb, int key);
+cn_cbor* cn_cbor_mapget_int(const cn_cbor* cb, int key);
 
 /**
  * Get the item with the given index from a CBOR array.
@@ -240,15 +243,17 @@ const cn_cbor* cn_cbor_mapget_int(const cn_cbor* cb, int key);
  * @param[in]  idx          The array index
  * @return                  The matching value, or NULL if the index is invalid
  */
-const cn_cbor* cn_cbor_index(const cn_cbor* cb, unsigned int idx);
+cn_cbor* cn_cbor_index(const cn_cbor* cb, unsigned int idx);
 
 /**
  * Free the given CBOR structure.
+ * You MUST NOT try to free a cn_cbor structure with a parent (i.e., one
+ * that is not a root in the tree).
  *
- * @param[in]  cb           The CBOR value to free
+ * @param[in]  cb           The CBOR value to free.  May be NULL, or a root object.
  * @param[in]  CBOR_CONTEXT Allocation context (only if USE_CBOR_CONTEXT is defined)
  */
-void cn_cbor_free(const cn_cbor* cb CBOR_CONTEXT);
+void cn_cbor_free(cn_cbor* cb CBOR_CONTEXT);
 
 /**
  * Write a CBOR value and all of the child values.
@@ -260,10 +265,10 @@ void cn_cbor_free(const cn_cbor* cb CBOR_CONTEXT);
  * @param[in]  cb         [description]
  * @return                -1 on fail, or number of bytes written
  */
-ssize_t cbor_encoder_write(uint8_t *buf,
-                           size_t buf_offset,
-                           size_t buf_size,
-                           const cn_cbor *cb);
+ssize_t cn_cbor_encoder_write(uint8_t *buf,
+			      size_t buf_offset,
+			      size_t buf_size,
+			      const cn_cbor *cb);
 
 /**
  * Create a CBOR map.
