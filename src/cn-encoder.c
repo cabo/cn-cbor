@@ -45,7 +45,7 @@ typedef struct _write_state
   return; \
 }
 
-inline void write_byte_and_data(cn_write_state * ws, byte b, const byte * data, size_t sz)
+inline void write_byte_and_data(cn_write_state * ws, uint8_t b, const uint8_t * data, size_t sz)
 {
 	if (ws->buf != NULL) {
 		ws->buf[ws->offset++] = (b);
