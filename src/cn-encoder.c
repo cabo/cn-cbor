@@ -45,14 +45,10 @@ typedef struct _write_state
   return; \
 }
 
-inline void write_byte_and_data(cn_write_state * ws, uint8_t b, const uint8_t * data, size_t sz)
-{
-	if (ws->buf != NULL) {
-		ws->buf[ws->offset++] = (b);
-		memcpy(ws->buf + ws->offset, (data), (sz));
-	}
-	ws->offset += sz;
-}
+#define write_byte_and_data(b, data, sz) \
+    ws->buf[ws->offset++] = (b); \
+    memcpy(ws->buf + ws->offset, (data), (sz)); \
+    ws->offset += sz;
 
 #define write_byte(b) \
 { if (ws->buf == NULL) ws->offset++; \
