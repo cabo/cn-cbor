@@ -1,8 +1,10 @@
 #ifndef CN_PRINT_C
 #define CN_PRINT_C
+#define CN_INCLUDE_DUMPER
 #ifdef CN_INCLUDE_DUMPER
 #define _CRT_SECURE_NO_WARNINGS 1
 
+#include <stdio.h>
 #include <stdio.h>
 
 #ifdef  __cplusplus
@@ -13,7 +15,11 @@ extern "C" {
 #endif
 
 #include <stdio.h>
+#ifdef MSV_CRT
 #include <winsock2.h>
+#else
+#define _snprintf snprintf
+#endif
 #include <string.h>
 #include <stdbool.h>
 #include <assert.h>
@@ -26,7 +32,7 @@ typedef struct _write_state
 	char * rgbOutput;
 	ssize_t ib;
 	size_t cbLeft;
-	byte * rgFlags;
+	uint8_t * rgFlags;
 	const char * szIndentWith;
 	const char * szEndOfLine;
 } cn_write_state;
@@ -40,7 +46,7 @@ extern void _visit(const cn_cbor *cb,
 const char RgchHex[] = { '0', '1', '2', '3', '4', '5', '6', '7',
 '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
 
-inline bool _isWritable(cn_write_state * ws, size_t cb)
+bool _isWritable(cn_write_state * ws, size_t cb)
 {
 	if (ws->rgbOutput == NULL) return true;
 	if ((ws->ib < 0) || (ws->ib + cb > ws->cbLeft)) {
@@ -50,7 +56,7 @@ inline bool _isWritable(cn_write_state * ws, size_t cb)
 	return true;
 }
 
-inline void write_data(cn_write_state * ws, const char * sz, size_t cb)
+void write_data(cn_write_state * ws, const char * sz, size_t cb)
 {
 	if (_isWritable(ws, cb)) {
 		if (ws->rgbOutput != NULL) memcpy(ws->rgbOutput + ws->ib, sz, cb);
@@ -58,7 +64,7 @@ inline void write_data(cn_write_state * ws, const char * sz, size_t cb)
 	}
 }
 
-inline void _doIndent(cn_write_state * ws, int depth)
+void _doIndent(cn_write_state * ws, int depth)
 {
 	int i;
 	char * sz = ws->rgbOutput + ws->ib;
@@ -89,7 +95,7 @@ void _print_encoder(const cn_cbor * cb, int depth, void * context)
 	char rgchT[256];
 	int cch;
 	cn_write_state * ws = (cn_write_state *)context;
-	byte flags = ws->rgFlags[depth];
+	uint8_t flags = ws->rgFlags[depth];
 
 	if (flags & 1) {
 		write_data(ws, ", ", 2);
@@ -107,6 +113,10 @@ void _print_encoder(const cn_cbor * cb, int depth, void * context)
 	}
 
 	switch (cb->type) {
+	case CN_CBOR_BYTES_CHUNKED:
+	case CN_CBOR_TEXT_CHUNKED:
+	  break;
+
 	case CN_CBOR_ARRAY:
 		write_data(ws, "[", 1);
 		ws->rgFlags[depth] |= 4;
@@ -130,7 +140,7 @@ void _print_encoder(const cn_cbor * cb, int depth, void * context)
 	case CN_CBOR_TAG:
 	case CN_CBOR_UINT:
 	case CN_CBOR_SIMPLE:
-		cch = _snprintf(rgchT, sizeof(rgchT), "%u", cb->v.uint);
+	  cch = _snprintf(rgchT, sizeof(rgchT), "%u", (unsigned int) cb->v.uint);
 		write_data(ws, rgchT, cch);
 		break;
 
@@ -151,7 +161,7 @@ void _print_encoder(const cn_cbor * cb, int depth, void * context)
 		break;
 
 	case CN_CBOR_INT:
-		cch = _snprintf(rgchT, sizeof(rgchT), "%d", cb->v.sint);
+	  cch = _snprintf(rgchT, sizeof(rgchT), "%d", (unsigned int) cb->v.sint);
 		write_data(ws, rgchT, cch);
 		break;
 
@@ -213,12 +223,15 @@ void _print_breaker(const cn_cbor * cb, int depth, void * context)
 		write_data(ws, "}", 1);
 		ws->rgFlags[depth + 1] = 0;
 		break;
+
+	default:
+	  break;
 	}
 }
 
 ssize_t cn_cbor_printer_write(char * rgbBuffer, size_t cbBuffer, const cn_cbor * cb, const char * szIndentWith, const char * szEndOfLine)
 {
-	byte flags[128] = { 0 };
+	uint8_t flags[128] = { 0 };
 	char rgchZero[1] = { 0 };
 
 	cn_write_state ws = { rgbBuffer, 0, cbBuffer, flags, szIndentWith, szEndOfLine };
@@ -237,3 +250,4 @@ ssize_t cn_cbor_printer_write(char * rgbBuffer, size_t cbBuffer, const cn_cbor *
 
 #endif // CN_INCLUDE_DUMPER
 #endif // CN_PRINT_C
+
