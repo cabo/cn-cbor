@@ -55,12 +55,14 @@ struct ctest {
 #define __CTEST_MAGIC (0xdeadbeef)
 #ifdef __APPLE__
 #define __Test_Section __attribute__ ((unused,section ("__DATA, .ctest")))
+#define MS__Test_Section
 #else
 #ifdef _MSC_VER
 #define __Test_Section
 #define MS__Test_Section __declspec(allocate(".ctest"))
 #else
 #define __Test_Section __attribute__ ((unused,section (".ctest")))
+#define MS__Test_Section
 #endif
 #endif
 
