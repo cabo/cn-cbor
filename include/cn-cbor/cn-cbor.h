@@ -97,7 +97,9 @@ typedef struct cn_cbor {
   /** Data associated with the value; different branches of the union are
       used depending on the `type` field. */
   union {
-    /** CN_CBOR_BYTES, CN_CBOR_TEXT */
+    /** CN_CBOR_BYTES */
+    const uint8_t* bytes;
+    /** CN_CBOR_TEXT */
     const char* str;
     /** CN_CBOR_INT */
 #ifdef _MSC_VER
@@ -284,8 +286,10 @@ const cn_cbor* cn_cbor_index(const cn_cbor* cb, unsigned int idx);
 
 /**
  * Free the given CBOR structure.
+ * You MUST NOT try to free a cn_cbor structure with a parent (i.e., one
+ * that is not a root in the tree).
  *
- * @param[in]  cb           The CBOR value to free
+ * @param[in]  cb           The CBOR value to free.  May be NULL, or a root object.
  * @param[in]  CBOR_CONTEXT Allocation context (only if USE_CBOR_CONTEXT is defined)
  */
 MYLIB_EXPORT

@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/cabo/cn-cbor.png?branch=master)](https://travis-ci.org/cabo/cn-cbor)
+
 # cn-cbor: A constrained node implementation of CBOR in C
 
 This is a constrained node implementation of [CBOR](http://cbor.io) in

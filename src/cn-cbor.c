@@ -27,8 +27,9 @@ extern "C" {
 #define CN_CBOR_FAIL(code) do { pb->err = code;  goto fail; } while(0)
 
 MYLIB_EXPORT
-void cn_cbor_free(const cn_cbor* cb CBOR_CONTEXT) {
+void cn_cbor_free(cn_cbor* cb CBOR_CONTEXT) {
   cn_cbor* p = (cn_cbor*) cb;
+  assert(!p || !p->parent);
   while (p) {
     cn_cbor* p1;
     while ((p1 = p->first_child)) { /* go down */
