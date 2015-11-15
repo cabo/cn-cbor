@@ -252,7 +252,7 @@ typedef struct cn_cbor_context {
  * @return                  The parsed CBOR structure, or NULL on error
  */
 MYLIB_EXPORT
-const cn_cbor* cn_cbor_decode(const uint8_t *buf, size_t len CBOR_CONTEXT, cn_cbor_errback *errp);
+cn_cbor* cn_cbor_decode(const uint8_t *buf, size_t len CBOR_CONTEXT, cn_cbor_errback *errp);
 
 /**
  * Get a value from a CBOR map that has the given string as a key.
@@ -262,7 +262,7 @@ const cn_cbor* cn_cbor_decode(const uint8_t *buf, size_t len CBOR_CONTEXT, cn_cb
  * @return                  The matching value, or NULL if the key is not found
  */
 MYLIB_EXPORT
-const cn_cbor* cn_cbor_mapget_string(const cn_cbor* cb, const char* key);
+cn_cbor* cn_cbor_mapget_string(const cn_cbor* cb, const char* key);
 
 /**
  * Get a value from a CBOR map that has the given integer as a key.
@@ -272,7 +272,7 @@ const cn_cbor* cn_cbor_mapget_string(const cn_cbor* cb, const char* key);
  * @return                  The matching value, or NULL if the key is not found
  */
 MYLIB_EXPORT
-const cn_cbor* cn_cbor_mapget_int(const cn_cbor* cb, int key);
+cn_cbor* cn_cbor_mapget_int(const cn_cbor* cb, int key);
 
 /**
  * Get the item with the given index from a CBOR array.
@@ -282,7 +282,7 @@ const cn_cbor* cn_cbor_mapget_int(const cn_cbor* cb, int key);
  * @return                  The matching value, or NULL if the index is invalid
  */
 MYLIB_EXPORT
-const cn_cbor* cn_cbor_index(const cn_cbor* cb, unsigned int idx);
+cn_cbor* cn_cbor_index(const cn_cbor* cb, unsigned int idx);
 
 /**
  * Free the given CBOR structure.
@@ -293,7 +293,7 @@ const cn_cbor* cn_cbor_index(const cn_cbor* cb, unsigned int idx);
  * @param[in]  CBOR_CONTEXT Allocation context (only if USE_CBOR_CONTEXT is defined)
  */
 MYLIB_EXPORT
-void cn_cbor_free(const cn_cbor* cb CBOR_CONTEXT);
+void cn_cbor_free(cn_cbor* cb CBOR_CONTEXT);
 
 /**
  * Write a CBOR value and all of the child values.
