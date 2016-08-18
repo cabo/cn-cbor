@@ -11,9 +11,12 @@ build
 # Visual Stdio build directories
 Debug
 Release
+*.sln
 *.vcxproj
 *.vcxproj.filters
 *.vcxproj.user
+*.VC.db
+*.VC.opendb
 
 # Output of CMake
 CMakeCache.txt

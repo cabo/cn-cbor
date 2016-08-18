@@ -19,6 +19,7 @@ extern "C" {
 #include <arpa/inet.h> // needed for ntohl (e.g.) on Linux
 
 #include "dll-export.h"
+#endif // _MSC_VER
 
 #include "cn-cbor/cn-cbor.h"
 #include "cbor.h"
