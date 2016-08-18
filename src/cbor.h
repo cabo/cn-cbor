@@ -1,6 +1,10 @@
 #ifndef CBOR_PROTOCOL_H__
 #define CBOR_PROTOCOL_H__
 
+#ifdef _MSC_VER
+#define inline _inline
+#endif
+
 /* The 8 major types */
 #define MT_UNSIGNED 0
 #define MT_NEGATIVE 1

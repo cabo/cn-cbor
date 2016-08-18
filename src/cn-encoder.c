@@ -13,7 +13,9 @@ extern "C" {
 #define inline _inline
 #else
 #include <arpa/inet.h>
+#endif
 #include <string.h>
+#ifndef _MSC_VER
 #include <strings.h>
 #endif
 #include <stdbool.h>
