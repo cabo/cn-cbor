@@ -81,7 +81,9 @@ typedef struct cn_cbor {
   /** Data associated with the value; different branches of the union are
       used depending on the `type` field. */
   union {
-    /** CN_CBOR_BYTES, CN_CBOR_TEXT */
+    /** CN_CBOR_BYTES */
+    const uint8_t* bytes;
+    /** CN_CBOR_TEXT */
     const char* str;
     /** CN_CBOR_INT */
     long sint;
