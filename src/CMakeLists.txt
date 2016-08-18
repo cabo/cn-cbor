@@ -14,7 +14,15 @@ set ( cbor_srcs
 if (use_context)
   add_definitions(-DUSE_CBOR_CONTEXT)
 endif()
-add_library ( cn-cbor SHARED ${cbor_srcs} )
+add_library ( cn-cbor ${LIB_TYPE} ${cbor_srcs} )
+message ( "MSVC: ${MSVC}")
+if ( MSVC )
+   message ( "test: ${build_shared_libs}")
+   message ( "verbose: ${verbose}")
+
+   target_link_libraries(cn-cbor ws2_32)
+endif()
+
 target_include_directories ( cn-cbor PUBLIC ../include )
 target_include_directories ( cn-cbor PRIVATE ../src )
 
@@ -43,9 +51,11 @@ if (coveralls)
     #add_dependencies(coveralls, all)
 endif()
 
+if (NOT MSVC)
 add_custom_target(size
   COMMAND echo "${CMAKE_BINARY_DIR}/src/CMakeFiles/cn-cbor.dir/cn-cbor.c.o"
   COMMAND size "${CMAKE_BINARY_DIR}/src/CMakeFiles/cn-cbor.dir/cn-cbor.c.o"
   COMMAND size -m "${CMAKE_BINARY_DIR}/src/CMakeFiles/cn-cbor.dir/cn-cbor.c.o"
   DEPENDS cn-cbor
 COMMENT "Output the size of the parse routine")
+endif (NOT MSVC)
