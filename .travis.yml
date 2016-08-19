@@ -3,10 +3,13 @@ compiler:
 - clang
 - gcc
 sudo: false
-before_install:
-- wget http://cmake.org/files/v3.3/cmake-3.3.1-Linux-x86_64.tar.gz  -O /tmp/cmake.tar.gz --no-check-certificate --debug
-- tar xzf /tmp/cmake.tar.gz
-- export PATH=$PWD/cmake-3.3.1-Linux-x86_64/bin/:$PATH
+addons:
+  apt:
+    sources:
+      - george-edison55-precise-backports
+    packages:
+      - cmake
+      - cmake-data
 script:
 - "./build.sh all test"
 notifications:
