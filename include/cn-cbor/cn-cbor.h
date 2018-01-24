@@ -136,7 +136,10 @@ typedef enum cn_cbor_error {
   CN_CBOR_ERR_OUT_OF_MEMORY,
   /** A float was encountered during parse but the library was built without
       support for float types. */
-  CN_CBOR_ERR_FLOAT_NOT_SUPPORTED
+  CN_CBOR_ERR_FLOAT_NOT_SUPPORTED,
+  /** An overflow occured while assigning an unsigned or signed integer
+  */
+  CN_CBOR_ERR_OVERFLOW
 } cn_cbor_error;
 
 /**

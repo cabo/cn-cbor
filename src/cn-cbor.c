@@ -151,10 +151,15 @@ again:
   // process content
   switch (mt) {
   case MT_UNSIGNED:
-    cb->v.uint = val;           /* to do: Overflow check */
+    /* with Overflow check */
+    if (__builtin_add_overflow(val, 0, &cb->v.uint))
+      CN_CBOR_FAIL(CN_CBOR_ERR_OVERFLOW);
     break;
   case MT_NEGATIVE:
-    cb->v.sint = ~val;          /* to do: Overflow check */
+    /* with Overflow check */
+    if (__builtin_add_overflow(val, 0, &cb->v.sint))
+      CN_CBOR_FAIL(CN_CBOR_ERR_OVERFLOW);
+    cb->v.sint = ~cb->v.sint;
     break;
   case MT_BYTES: case MT_TEXT:
     cb->v.str = (char *) pos;
@@ -171,7 +176,9 @@ again:
     }
     break;
   case MT_TAG:
-    cb->v.uint = val;
+    /* with Overflow check?*/
+    if (__builtin_add_overflow(val, 0, &cb->v.uint))
+      CN_CBOR_FAIL(CN_CBOR_ERR_OVERFLOW);
     goto push;
   case MT_PRIM:
     switch (ai) {
