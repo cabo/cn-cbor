@@ -109,7 +109,7 @@ static void cn_cbor_decode_test(const unsigned char *buf, int len) {
   printf("%s at %d\n", err_name[back.err], back.pos);
 }
 
-int main() {
+int main(void) {
   char buf[100000];
   unsigned char *end;
   char *bufend;
