@@ -1,3 +1,4 @@
+
 /**
  * \file
  * \brief
@@ -323,6 +324,20 @@ cn_cbor* cn_cbor_string_create(const char* data
 cn_cbor* cn_cbor_int_create(int64_t value
                             CBOR_CONTEXT,
                             cn_cbor_errback *errp);
+
+#ifndef CBOR_NO_FLOAT
+/**
+ * Create a CBOR double.
+ *
+ * @param[in]   value    the value of the double
+ * @param[in]   CBOR_CONTEXT Allocation context (only if USE_CBOR_CONTEXT is defined)
+ * @param[out]  errp         Error, if NULL is returned
+ * @return                   The created object, or NULL on error
+ */
+cn_cbor* cn_cbor_double_create(double value
+                               CBOR_CONTEXT,
+                               cn_cbor_errback *errp);
+#endif /* CBOR_NO_FLOAT */
 
 /**
  * Put a CBOR object into a map with a CBOR object key.  Duplicate checks are NOT
