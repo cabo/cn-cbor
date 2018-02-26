@@ -327,6 +327,9 @@ CTEST(cbor, create)
     cn_cbor *cb_map = cn_cbor_map_create(CONTEXT_NULL_COMMA &err);
     cn_cbor *cb_int;
     cn_cbor *cb_data;
+#ifndef CBOR_NO_FLOAT
+    cn_cbor *cb_dbl;
+#endif
 
     ASSERT_NOT_NULL(cb_map);
     ASSERT_TRUE(err.err == CN_CBOR_NO_ERROR);
@@ -338,6 +341,12 @@ CTEST(cbor, create)
     cb_data = cn_cbor_data_create((const uint8_t*)data, 4 CONTEXT_NULL, &err);
     ASSERT_NOT_NULL(cb_data);
     ASSERT_TRUE(err.err == CN_CBOR_NO_ERROR);
+
+#ifndef CBOR_NO_FLOAT
+    cb_dbl = cn_cbor_double_create(3.14159 CONTEXT_NULL, &err);
+    ASSERT_NOT_NULL(cb_dbl);
+    ASSERT_TRUE(err.err == CN_CBOR_NO_ERROR);
+#endif
 
     cn_cbor_mapput_int(cb_map, 5, cb_int CONTEXT_NULL, &err);
     ASSERT_TRUE(err.err == CN_CBOR_NO_ERROR);
@@ -360,6 +369,12 @@ CTEST(cbor, create)
     ASSERT_TRUE(err.err == CN_CBOR_NO_ERROR);
     ASSERT_TRUE(cb_map->length == 8);
 
+#ifndef CBOR_NO_FLOAT
+    cn_cbor_mapput_int(cb_map, 42, cb_dbl CONTEXT_NULL, &err);
+    ASSERT_TRUE(err.err == CN_CBOR_NO_ERROR);
+    ASSERT_TRUE(cb_map->length == 10);
+#endif
+
     val = cn_cbor_mapget_int(cb_map, 5);
     ASSERT_NOT_NULL(val);
     ASSERT_TRUE(val->v.sint == 256);
@@ -367,6 +382,12 @@ CTEST(cbor, create)
     val = cn_cbor_mapget_int(cb_map, -7);
     ASSERT_NOT_NULL(val);
     ASSERT_STR(val->v.str, "abc");
+
+#ifndef CBOR_NO_FLOAT
+    val = cn_cbor_mapget_int(cb_map, 42);
+    ASSERT_NOT_NULL(val);
+    ASSERT_TRUE(val->v.dbl > 3.14 && val->v.dbl < 3.15);
+#endif
 
     cn_cbor_free(cb_map CONTEXT_NULL);
 }
