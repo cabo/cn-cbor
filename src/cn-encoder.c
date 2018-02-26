@@ -276,6 +276,11 @@ void _encoder_visitor(const cn_cbor *cb, int depth, void *context)
     CHECK(_write_double(ws, cb->v.dbl));
 #endif /* CBOR_NO_FLOAT */
     break;
+  case CN_CBOR_FLOAT:
+#ifndef CBOR_NO_FLOAT
+    CHECK(_write_double(ws, cb->v.f));
+#endif /* CBOR_NO_FLOAT */
+    break;
 
   case CN_CBOR_INVALID:
     ws->offset = -1;

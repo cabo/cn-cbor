@@ -74,6 +74,19 @@ cn_cbor* cn_cbor_int_create(int64_t value
 }
 
 #ifndef CBOR_NO_FLOAT
+cn_cbor* cn_cbor_float_create(float value
+                              CBOR_CONTEXT,
+                              cn_cbor_errback *errp)
+{
+  cn_cbor* ret;
+  INIT_CB(ret);
+
+  ret->type = CN_CBOR_FLOAT;
+  ret->v.f = value;
+
+  return ret;
+}
+
 cn_cbor* cn_cbor_double_create(double value
                                CBOR_CONTEXT,
                                cn_cbor_errback *errp)
