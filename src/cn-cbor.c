@@ -13,7 +13,9 @@ extern "C" {
 #include <string.h>
 #include <assert.h>
 #include <math.h>
+#ifdef CBOR_CAN_DO_UNALIGNED_READS
 #include <arpa/inet.h> // needed for ntohl (e.g.) on Linux
+#endif
 
 #include "cn-cbor/cn-cbor.h"
 #include "cbor.h"
@@ -51,8 +53,23 @@ static double decode_half(int half) {
 
 /* Fix these if you can't do non-aligned reads */
 #define ntoh8p(p) (*(unsigned char*)(p))
+#ifdef CBOR_CAN_DO_UNALIGNED_READS
 #define ntoh16p(p) (ntohs(*(unsigned short*)(p)))
 #define ntoh32p(p) (ntohl(*(unsigned long*)(p)))
+#else
+static uint16_t ntoh16p(unsigned char *p) {
+  uint16_t ret = ntoh8p(p);
+  ret <<= 8;
+  ret += ntoh8p(p+1);
+  return ret;
+}
+static uint32_t ntoh32p(unsigned char *p) {
+  uint64_t ret = ntoh16p(p);
+  ret <<= 16;
+  ret += ntoh16p(p+2);
+  return ret;
+}
+#endif
 static uint64_t ntoh64p(unsigned char *p) {
   uint64_t ret = ntoh32p(p);
   ret <<= 32;
