@@ -51,8 +51,18 @@ static double decode_half(int half) {
 
 /* Fix these if you can't do non-aligned reads */
 #define ntoh8p(p) (*(unsigned char*)(p))
-#define ntoh16p(p) (ntohs(*(unsigned short*)(p)))
-#define ntoh32p(p) (ntohl(*(unsigned long*)(p)))
+static uint16_t ntoh16p(unsigned char *p) {
+    uint16_t tmp;
+    memcpy(&tmp, p, sizeof(tmp));
+    return ntohs(tmp);
+}
+
+static uint32_t ntoh32p(unsigned char *p) {
+    uint32_t tmp;
+    memcpy(&tmp, p, sizeof(tmp));
+    return ntohl(tmp);
+}
+
 static uint64_t ntoh64p(unsigned char *p) {
   uint64_t ret = ntoh32p(p);
   ret <<= 32;
