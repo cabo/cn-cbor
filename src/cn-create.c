@@ -205,6 +205,47 @@ bool cn_cbor_array_append(cn_cbor* cb_array,
   return true;
 }
 
+bool cn_cbor_array_remove(cn_cbor* cb_array,
+                          cn_cbor* cb_value
+                          CBOR_CONTEXT,
+                          cn_cbor_errback *errp)
+{
+  //Make sure input is an array.
+  if(!cb_array || !cb_value || cb_array->type != CN_CBOR_ARRAY ||
+     cb_value->parent != cb_array)
+  {
+    if (errp) {errp->err = CN_CBOR_ERR_INVALID_PARAMETER;}
+    return false;
+  }
+
+  cn_cbor *p = cb_array->first_child;
+  if (p == cb_value) {
+    cb_array->first_child = cb_value->next;
+    p = NULL;
+  } else {
+    while (p) {
+      if (p->next == cb_value) {
+        break;
+      }
+      p = p->next;
+    }
+  }
+  if (cb_array->last_child == cb_value) {
+    cb_array->last_child = p;
+    if (p) {
+      p->next = NULL;
+    }
+  }
+  if (p && p->next) {
+    p->next = p->next->next;
+  }
+  cb_array->length--;
+  cb_value->next = NULL;
+  cb_value->parent = NULL;
+  cn_cbor_free(cb_value CBOR_CONTEXT_PARAM);
+  return true;
+}
+
 #ifdef  __cplusplus
 }
 #endif

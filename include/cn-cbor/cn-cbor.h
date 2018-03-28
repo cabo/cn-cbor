@@ -425,6 +425,22 @@ bool cn_cbor_array_append(cn_cbor* cb_array,
                           cn_cbor* cb_value,
                           cn_cbor_errback *errp);
 
+/**
+ * Remove an item from a CBOR array.
+ *
+ * The removed node is automatically freed on succes.
+ *
+ * @param[in]   cb_array     The array from which to remove
+ * @param[in]   cb_value     The value to remove
+ * @param[in]   CBOR_CONTEXT Allocation context (only if USE_CBOR_CONTEXT is defined)
+ * @param[out]  errp         Error
+ * @return                   True on success
+ */
+bool cn_cbor_array_remove(cn_cbor* cb_array,
+                          cn_cbor* cb_value
+                          CBOR_CONTEXT,
+                          cn_cbor_errback *errp);
+
 #ifdef  __cplusplus
 }
 #endif
