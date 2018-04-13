@@ -202,10 +202,10 @@ typedef struct cn_cbor_context {
 
 /** When USE_CBOR_CONTEXT is defined, many functions take an extra `context`
   * parameter */
-#define CBOR_CONTEXT , cn_cbor_context *context
+#define CBOR_CONTEXT , const cn_cbor_context *context
 /** When USE_CBOR_CONTEXT is defined, some functions take an extra `context`
   * parameter at the beginning */
-#define CBOR_CONTEXT_COMMA cn_cbor_context *context,
+#define CBOR_CONTEXT_COMMA const cn_cbor_context *context,
 
 #else
 
