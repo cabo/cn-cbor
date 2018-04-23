@@ -49,13 +49,20 @@ typedef struct _write_state
 }
 
 #define write_byte_and_data(b, data, sz) \
-    ws->buf[ws->offset++] = (b); \
-    memcpy(ws->buf + ws->offset, (data), (sz)); \
-    ws->offset += sz;
+if(ws->buf) { \
+  ws->buf[ws->offset++] = (b); \
+  memcpy(ws->buf+ws->offset, (data), (sz)); \
+} else { \
+  ws->offset++; \
+} \
+ws->offset += sz;
 
 #define write_byte(b) \
-{ if (ws->buf == NULL) ws->offset++; \
-else ws->buf[ws->offset++] = (b); }
+if(ws->buf) { \
+  ws->buf[ws->offset++] = (b); \
+} else { \
+  ws->offset++; \
+}
 
 #define write_byte_ensured(b) \
 ensure_writable(1); \
@@ -266,7 +273,9 @@ void _encoder_visitor(const cn_cbor *cb, int depth, void *context)
   case CN_CBOR_BYTES:
     CHECK(_write_positive(ws, cb->type, cb->length));
     ensure_writable(cb->length);
-    memcpy(ws->buf+ws->offset, cb->v.str, cb->length);
+    if (ws->buf) {
+      memcpy(ws->buf+ws->offset, cb->v.str, cb->length);
+    }
     ws->offset += cb->length;
     break;
 
@@ -320,6 +329,7 @@ ssize_t cn_cbor_encoder_write(uint8_t *buf,
 			      const cn_cbor *cb)
 {
   cn_write_state ws = { buf, buf_offset, buf_size };
+  if (!ws.buf && ws.size <= 0) { ws.size = (ssize_t)(((size_t)-1) / 2); }
   _visit(cb, _encoder_visitor, _encoder_breaker, &ws);
   if (ws.offset < 0) { return -1; }
   return ws.offset - buf_offset;
