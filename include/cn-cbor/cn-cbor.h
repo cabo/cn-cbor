@@ -278,6 +278,18 @@ ssize_t cn_cbor_encoder_write(uint8_t *buf,
 			      const cn_cbor *cb);
 
 /**
+ * Create a CBOR object.
+ *
+ * @param[in]   type         the type of the object
+ * @param[in]   CBOR_CONTEXT Allocation context (only if USE_CBOR_CONTEXT is defined)
+ * @param[out]  errp         Error, if NULL is returned
+ * @return                   The created object, or NULL on error
+ */
+cn_cbor* cn_cbor_create(cn_cbor_type type
+                        CBOR_CONTEXT,
+                        cn_cbor_errback *errp);
+
+/**
  * Create a CBOR map.
  *
  * @param[in]   CBOR_CONTEXT Allocation context (only if USE_CBOR_CONTEXT is defined)
