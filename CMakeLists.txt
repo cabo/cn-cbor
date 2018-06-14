@@ -56,7 +56,7 @@ message ( "Build type: ${CMAKE_BUILD_TYPE}" )
 if ( CMAKE_C_COMPILER_ID STREQUAL "GNU" OR
      CMAKE_C_COMPILER_ID MATCHES "Clang" )
   message ( STATUS "adding GCC/Clang options ")
-  add_definitions ( -std=gnu99 -Wall -Wextra -pedantic )
+  add_definitions ( -std=gnu99 -Wall -Wextra -pedantic -Wswitch-default )
   if ( fatal_warnings )
     add_definitions ( -Werror )
   endif ()

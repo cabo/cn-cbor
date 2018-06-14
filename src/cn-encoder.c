@@ -285,6 +285,8 @@ void _encoder_visitor(const cn_cbor *cb, int depth, void *context)
   case CN_CBOR_INVALID:
     ws->offset = -1;
     break;
+  default:
+    break;
   }
 }
 
