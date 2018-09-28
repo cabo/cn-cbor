@@ -116,7 +116,7 @@ static void _write_positive(cn_write_state *ws, cn_cbor_type typ, uint64_t val) 
 static void _write_double(cn_write_state *ws, double val)
 {
   float float_val = val;
-  if (float_val == val) {                /* 32 bits is enough and we aren't NaN */
+  if ((double)float_val == val) { /* 32 bits is enough and we aren't NaN */
     uint32_t be32;
     uint16_t be16, u16;
     union {
