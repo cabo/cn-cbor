@@ -17,6 +17,7 @@ Release
 *.vcxproj.user
 *.VC.db
 *.VC.opendb
+/.vscode/
 
 # Output of CMake
 CMakeCache.txt
