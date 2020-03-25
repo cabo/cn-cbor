@@ -29,6 +29,8 @@ option(build_tests "Create tests" ON)
 option(no_floats "Build without floating point support" OFF)
 option(align_reads "Use memcpy in ntoh*p()" OFF)
 
+include(GNUInstallDirs)
+
 set(dist_dir ${CMAKE_BINARY_DIR}/dist)
 set(prefix ${CMAKE_INSTALL_PREFIX})
 set(exec_prefix ${CMAKE_INSTALL_PREFIX}/bin)
@@ -114,6 +116,9 @@ if(MSVC)
   message("verbose: ${verbose}")
   target_link_libraries(${PROJECT_NAME} ws2_32)
 endif()
+add_library(${PROJECT_NAME}::${PROJECT_NAME}
+            ALIAS
+            ${PROJECT_NAME})
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake)
 if(coveralls)
@@ -213,8 +218,15 @@ include(CPack)
 # INSTALL
 # ##############################################################################
 
+set(CN_CNBOR_CONFIG_INSTALL_DIR ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME})
+
 install(FILES LICENSE README.md DESTINATION .)
-install(DIRECTORY include DESTINATION include)
+
+install(DIRECTORY include/
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+        COMPONENT dev
+        FILES_MATCHING
+        PATTERN "*.h")
 
 install(
   TARGETS cn-cbor
