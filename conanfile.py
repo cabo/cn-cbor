@@ -30,7 +30,7 @@ class CnCborConan(ConanFile):
 
     def source(self):
         self.run(
-            "git clone -b complete git@github.com:gocarlos/cn-cbor.git")
+            "git clone -b complete git@github.com:jimsch/cn-cbor.git")
         os.rename("cn-cbor", self._source_subfolder)
 
     def configure(self):
