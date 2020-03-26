@@ -218,8 +218,6 @@ include(CPack)
 # INSTALL
 # ##############################################################################
 
-set(CN_CNBOR_CONFIG_INSTALL_DIR ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME})
-
 install(FILES LICENSE README.md DESTINATION .)
 
 install(DIRECTORY include/
