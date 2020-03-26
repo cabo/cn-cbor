@@ -103,10 +103,7 @@ if(use_context)
 endif()
 # default is static, can be shared if -DBUILD_SHARED_LIBS=ON passed to cmake
 add_library(${PROJECT_NAME})
-target_sources(
-  ${PROJECT_NAME}
-  PUBLIC ${CMAKE_CURRENT_LIST_DIR}/include/cn-cbor/cn-cbor.h
-  PRIVATE ${cbor_srcs})
+target_sources(${PROJECT_NAME} PRIVATE include/cn-cbor/cn-cbor.h ${cbor_srcs})
 target_include_directories(
   ${PROJECT_NAME}
   PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>
@@ -116,9 +113,7 @@ if(MSVC)
   message("verbose: ${verbose}")
   target_link_libraries(${PROJECT_NAME} ws2_32)
 endif()
-add_library(${PROJECT_NAME}::${PROJECT_NAME}
-            ALIAS
-            ${PROJECT_NAME})
+add_library(${PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake)
 if(coveralls)
@@ -218,14 +213,40 @@ include(CPack)
 # INSTALL
 # ##############################################################################
 
+include(GNUInstallDirs)
+include(CMakePackageConfigHelpers)
+
 install(FILES LICENSE README.md DESTINATION .)
+set(CN_CBOR_CONFIG_INSTALL_DIR ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME})
 
-install(DIRECTORY include/
-        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-        COMPONENT dev
-        FILES_MATCHING
-        PATTERN "*.h")
+install(
+  TARGETS ${PROJECT_NAME}
+  EXPORT ${PROJECT_NAME}Targets
+  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT lib
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT lib)
 
+install(
+  EXPORT ${PROJECT_NAME}Targets
+  DESTINATION ${CN_CBOR_CONFIG_INSTALL_DIR}
+  NAMESPACE ${PROJECT_NAME}::
+  COMPONENT dev)
+
+configure_package_config_file(cmake/Config.cmake.in ${PROJECT_NAME}Config.cmake
+                              INSTALL_DESTINATION ${CN_CBOR_CONFIG_INSTALL_DIR})
+write_basic_package_version_file(${PROJECT_NAME}ConfigVersion.cmake
+                                 COMPATIBILITY SameMajorVersion)
+install(
+  FILES ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake
+        ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake
+  DESTINATION ${CN_CBOR_CONFIG_INSTALL_DIR}
+  COMPONENT dev)
+
+install(
+  DIRECTORY include/
+  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+  COMPONENT dev
+  FILES_MATCHING
+  PATTERN "*.h")
 install(
   TARGETS cn-cbor
   LIBRARY DESTINATION lib
