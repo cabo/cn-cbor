@@ -9,7 +9,7 @@ configuration:
   - debug
 
 before_build:
-  - cmake -G "Visual Studio 16 2019"
+  - cmake -G "Visual Studio 16 2019" -Dfatal_warnings=OFF
 
 build:
   project: $(APPVEYOR_BUILD_FOLDER)\$(APPVEYOR_PROJECT_NAME).sln
