@@ -3,20 +3,25 @@ new.out
 *.o
 build
 
-# Files from Visual Studio Builds
-Debug
-Release
-
-# Files from emacs
+# Emacs temp files
 *~
 .#*
 *#
 
-# files from cmake
+# Visual Stdio build directories
+Debug
+Release
+*.sln
 *.vcxproj
 *.vcxproj.filters
 *.vcxproj.user
-CMakeFiles
-CMakeCache.txt
-*.cmake
+*.VC.db
+*.VC.opendb
+/.vscode/
 
+# Output of CMake
+CMakeCache.txt
+CMakeFiles
+Makefile
+*.cmake
+install_manifest.txt

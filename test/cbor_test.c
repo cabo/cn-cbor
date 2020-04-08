@@ -1,12 +1,22 @@
 /*
  * Copyright (c) 2015 SPUDlib authors.  See LICENSE file.
  */
+
+#ifdef _MSC_VER
+#define _CRT_SECURE_NO_WARNINGS
+#define _CRTDBG_MAP_ALLOC
+#include <crtdbg.h>
+#endif
+
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <assert.h>
 #include <string.h>
+#ifdef _MSC_VER
+#include "winsock2.h"
+#endif
 
 #include "cn-cbor/cn-cbor.h"
 
@@ -43,7 +53,13 @@ static bool parse_hex(char *inp, buffer *b)
     b->sz  = len / 2;
     b->ptr = malloc(b->sz);
     for (i=0; i<b->sz; i++) {
+#ifdef _MSC_VER
+		unsigned int iX;
+		sscanf(inp+(2*i), "%02hx", &iX);
+		b->ptr[i] = (byte)iX;
+#else
         sscanf(inp+(2*i), "%02hhx", &b->ptr[i]);
+#endif
     }
     return true;
 }
@@ -116,6 +132,7 @@ CTEST(cbor, parse)
     size_t i;
     unsigned char encoded[1024];
     ssize_t enc_sz;
+    ssize_t enc_sz2;
 
     for (i=0; i<sizeof(tests)/sizeof(char*); i++) {
         ASSERT_TRUE(parse_hex(tests[i], &b));
@@ -125,7 +142,9 @@ CTEST(cbor, parse)
         ASSERT_EQUAL(err.err, CN_CBOR_NO_ERROR);
         ASSERT_NOT_NULL(cb);
 
+        enc_sz2 = cn_cbor_encoder_write(NULL, 0, sizeof(encoded), cb);
         enc_sz = cn_cbor_encoder_write(encoded, 0, sizeof(encoded), cb);
+        ASSERT_EQUAL(enc_sz, enc_sz2);
         ASSERT_DATA(b.ptr, b.sz, encoded, enc_sz);
         free(b.ptr);
         cn_cbor_free(cb CONTEXT_NULL);
@@ -164,6 +183,7 @@ CTEST(cbor, parse_normalize)
     size_t i;
     unsigned char encoded[1024];
     ssize_t enc_sz;
+    ssize_t enc_sz2;
 
     for (i=0; i<sizeof(basic_tests)/sizeof(char*); i+=2) {
         ASSERT_TRUE(parse_hex(basic_tests[i], &b));
@@ -174,7 +194,9 @@ CTEST(cbor, parse_normalize)
         ASSERT_EQUAL(err.err, CN_CBOR_NO_ERROR);
         ASSERT_NOT_NULL(cb);
 
+        enc_sz2 = cn_cbor_encoder_write(NULL, 0, sizeof(encoded), cb);
         enc_sz = cn_cbor_encoder_write(encoded, 0, sizeof(encoded), cb);
+        ASSERT_EQUAL(enc_sz, enc_sz2);
         ASSERT_DATA(b2.ptr, b2.sz, encoded, enc_sz);
         free(b.ptr);
         free(b2.ptr);
@@ -195,7 +217,9 @@ CTEST(cbor, parse_normalize)
         ASSERT_NULL(cb);
 #endif /* CBOR_NO_FLOAT */
 
+        /* enc_sz2 = cn_cbor_encoder_write(NULL, 0, sizeof(encoded), cb); */
         /* enc_sz = cn_cbor_encoder_write(encoded, 0, sizeof(encoded), cb); */
+        /* ASSERT_EQUAL(enc_sz, enc_sz2); */
         /* ASSERT_DATA(b2.ptr, b2.sz, encoded, enc_sz); */
         free(b.ptr);
         free(b2.ptr);
@@ -258,13 +282,16 @@ CTEST(cbor, float)
     size_t i;
     unsigned char encoded[1024];
     ssize_t enc_sz;
+    ssize_t enc_sz2;
 
     for (i=0; i<sizeof(tests)/sizeof(char*); i++) {
         ASSERT_TRUE(parse_hex(tests[i], &b));
         cb = cn_cbor_decode(b.ptr, b.sz CONTEXT_NULL, &err);
         ASSERT_NOT_NULL(cb);
 
+        enc_sz2 = cn_cbor_encoder_write(NULL, 0, sizeof(encoded), cb);
         enc_sz = cn_cbor_encoder_write(encoded, 0, sizeof(encoded), cb);
+        ASSERT_EQUAL(enc_sz, enc_sz2);
         ASSERT_DATA(b.ptr, b.sz, encoded, enc_sz);
 
         free(b.ptr);
@@ -446,6 +473,8 @@ CTEST(cbor, create_encode)
   ASSERT_NOT_NULL(cdata);
 
   ASSERT_TRUE(cn_cbor_mapput_int(map, 0, cdata, CONTEXT_NULL_COMMA NULL));
+  enc_sz = cn_cbor_encoder_write(NULL, 0, sizeof(encoded), map);
+  ASSERT_EQUAL(7, enc_sz);
   enc_sz = cn_cbor_encoder_write(encoded, 0, sizeof(encoded), map);
   ASSERT_EQUAL(7, enc_sz);
 }

@@ -13,15 +13,22 @@ extern "C" {
 #include <string.h>
 #include <assert.h>
 #include <math.h>
+#ifdef _MSC_VER
+#include <WinSock2.h>  // needed for ntohl on Windows
+#else
 #include <arpa/inet.h> // needed for ntohl (e.g.) on Linux
+
+#include "dll-export.h"
+#endif // _MSC_VER
 
 #include "cn-cbor/cn-cbor.h"
 #include "cbor.h"
 
 #define CN_CBOR_FAIL(code) do { pb->err = code;  goto fail; } while(0)
 
+MYLIB_EXPORT
 void cn_cbor_free(cn_cbor* cb CBOR_CONTEXT) {
-  cn_cbor* p = cb;
+  cn_cbor* p = (cn_cbor*) cb;
   assert(!p || !p->parent);
   while (p) {
     cn_cbor* p1;
@@ -173,7 +180,7 @@ again:
     break;
   case MT_BYTES: case MT_TEXT:
     cb->v.str = (char *) pos;
-    cb->length = val;
+    cb->length = (size_t) val;
     TAKE(pos, ebuf, val, ;);
     break;
   case MT_MAP:
@@ -205,7 +212,7 @@ again:
     case AI_4:
 #ifndef CBOR_NO_FLOAT
       cb->type = CN_CBOR_DOUBLE;
-      u32.u = val;
+      u32.u = (uint32_t) val;
       cb->v.dbl = u32.f;
 #else /*  CBOR_NO_FLOAT */
       CN_CBOR_FAIL(CN_CBOR_ERR_FLOAT_NOT_SUPPORTED);
@@ -253,6 +260,7 @@ fail:
   return 0;
 }
 
+MYLIB_EXPORT
 cn_cbor* cn_cbor_decode(const unsigned char* buf, size_t len CBOR_CONTEXT, cn_cbor_errback *errp) {
   cn_cbor catcher = {CN_CBOR_INVALID, 0, {0}, 0, NULL, NULL, NULL, NULL};
   struct parse_buf pb;

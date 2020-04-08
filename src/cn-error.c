@@ -1,3 +1,6 @@
+#include "dll-export.h"
+
+MYLIB_EXPORT
 const char *cn_cbor_error_str[] = {
  "CN_CBOR_NO_ERROR",
  "CN_CBOR_ERR_OUT_OF_DATA",

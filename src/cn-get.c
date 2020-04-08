@@ -2,8 +2,11 @@
 #include <string.h>
 #include <assert.h>
 
+#include "dll-export.h"
+
 #include "cn-cbor/cn-cbor.h"
 
+MYLIB_EXPORT
 cn_cbor* cn_cbor_mapget_int(const cn_cbor* cb, int key) {
   cn_cbor* cp;
   assert(cb);
@@ -26,6 +29,7 @@ cn_cbor* cn_cbor_mapget_int(const cn_cbor* cb, int key) {
   return NULL;
 }
 
+MYLIB_EXPORT
 cn_cbor* cn_cbor_mapget_string(const cn_cbor* cb, const char* key) {
   cn_cbor *cp;
   int keylen;
@@ -49,6 +53,7 @@ cn_cbor* cn_cbor_mapget_string(const cn_cbor* cb, const char* key) {
   return NULL;
 }
 
+MYLIB_EXPORT
 cn_cbor* cn_cbor_index(const cn_cbor* cb, unsigned int idx) {
   cn_cbor *cp;
   unsigned int i = 0;

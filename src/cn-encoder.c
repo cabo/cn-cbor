@@ -8,12 +8,20 @@ extern "C" {
 } /* Duh. */
 #endif
 
+#ifdef _MSC_VER
+#include <WinSock2.h>
+#define inline _inline
+#else
 #include <arpa/inet.h>
+#endif
 #include <string.h>
+#ifndef _MSC_VER
 #include <strings.h>
+#endif
 #include <stdbool.h>
 #include <assert.h>
 
+#include "dll-export.h"
 #include "cn-cbor/cn-cbor.h"
 #include "cbor.h"
 
@@ -35,22 +43,30 @@ typedef struct _write_state
   ssize_t size;
 } cn_write_state;
 
-#define ensure_writable(sz) if ((ws->offset<0) || (ws->offset + (sz) > ws->size)) { \
+#define ensure_writable(sz) if ((ws->buf != NULL)  && ((ws->offset<0) || (ws->offset + (sz) > ws->size))) { \
   ws->offset = -1; \
   return; \
 }
 
 #define write_byte_and_data(b, data, sz) \
-ws->buf[ws->offset++] = (b); \
-memcpy(ws->buf+ws->offset, (data), (sz)); \
+if(ws->buf) { \
+  ws->buf[ws->offset++] = (b); \
+  memcpy(ws->buf+ws->offset, (data), (sz)); \
+} else { \
+  ws->offset++; \
+} \
 ws->offset += sz;
 
 #define write_byte(b) \
-ws->buf[ws->offset++] = (b); \
+if(ws->buf) { \
+  ws->buf[ws->offset++] = (b); \
+} else { \
+  ws->offset++; \
+}
 
 #define write_byte_ensured(b) \
 ensure_writable(1); \
-write_byte(b); \
+write_byte(b);
 
 static uint8_t _xlate[] = {
   IB_FALSE,    /* CN_CBOR_FALSE */
@@ -89,7 +105,7 @@ static void _write_positive(cn_write_state *ws, cn_cbor_type typ, uint64_t val) 
 
   if (val < 24) {
     ensure_writable(1);
-    write_byte(ib | val);
+    write_byte(ib | (uint8_t) val);
   } else if (val < 256) {
     ensure_writable(2);
     write_byte(ib | 24);
@@ -178,7 +194,7 @@ static void _write_double(cn_write_state *ws, double val)
 
 // TODO: make public?
 typedef void (*cn_visit_func)(const cn_cbor *cb, int depth, void *context);
-static void _visit(const cn_cbor *cb,
+void _visit(const cn_cbor *cb,
                    cn_visit_func visitor,
                    cn_visit_func breaker,
                    void *context)
@@ -194,17 +210,25 @@ visit:
         depth++;
       } else{
         // Empty indefinite
+#ifdef CN_INCLUDE_DUMPER
+          breaker(p, depth, context);
+#else
         if (is_indefinite(p)) {
-          breaker(p->parent, depth, context);
+          breaker(p, depth, context);
         }
+#endif
         if (p->next) {
           p = p->next;
         } else {
           while (p->parent) {
             depth--;
+#ifdef CN_INCLUDE_DUMPER
+            breaker(p->parent, depth, context);
+#else
             if (is_indefinite(p->parent)) {
               breaker(p->parent, depth, context);
             }
+#endif
             if (p->parent->next) {
               p = p->parent->next;
               goto visit;
@@ -249,7 +273,9 @@ void _encoder_visitor(const cn_cbor *cb, int depth, void *context)
   case CN_CBOR_BYTES:
     CHECK(_write_positive(ws, cb->type, cb->length));
     ensure_writable(cb->length);
-    memcpy(ws->buf+ws->offset, cb->v.str, cb->length);
+    if (ws->buf) {
+      memcpy(ws->buf+ws->offset, cb->v.str, cb->length);
+    }
     ws->offset += cb->length;
     break;
 
@@ -293,7 +319,13 @@ void _encoder_breaker(const cn_cbor *cb, int depth, void *context)
   cn_write_state *ws = context;
   UNUSED_PARAM(cb);
   UNUSED_PARAM(depth);
-  write_byte_ensured(IB_BREAK);
+#ifdef CN_INCLUDE_DUMPER
+  if (is_indefinite(cb)) {
+#endif
+      write_byte_ensured(IB_BREAK);
+#ifdef CN_INCLUDE_DUMPER
+  }
+#endif
 }
 
 ssize_t cn_cbor_encoder_write(uint8_t *buf,
@@ -302,6 +334,7 @@ ssize_t cn_cbor_encoder_write(uint8_t *buf,
 			      const cn_cbor *cb)
 {
   cn_write_state ws = { buf, buf_offset, buf_size };
+  if (!ws.buf && ws.size <= 0) { ws.size = (ssize_t)(((size_t)-1) / 2); }
   _visit(cb, _encoder_visitor, _encoder_breaker, &ws);
   if (ws.offset < 0) { return -1; }
   return ws.offset - buf_offset;
