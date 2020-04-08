@@ -2,6 +2,8 @@ cntest
 new.out
 *.o
 build
+Testing/Temporary
+*.pc
 
 # Emacs temp files
 *~
@@ -11,6 +13,7 @@ build
 # Visual Stdio build directories
 Debug
 Release
+v16
 *.sln
 *.vcxproj
 *.vcxproj.filters
@@ -25,3 +28,4 @@ CMakeFiles
 Makefile
 *.cmake
 install_manifest.txt
+*.tcl

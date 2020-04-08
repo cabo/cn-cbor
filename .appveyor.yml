@@ -8,9 +8,18 @@ configuration:
   - release
   - debug
 
+environment:
+  - OPTIONS=-Duse_context=ON
+  - OPTIONS=-Duse_context=OFF
+  - OPTIONS=-Dno_floats=ON
+  - OPTIONS=-Dalign_reads=ON
+
 before_build:
-  - cmake -G "Visual Studio 16 2019" -Dfatal_warnings=OFF
+  - cmake -G "Visual Studio 16 2019" -Dfatal_warnings=OFF $(OPTIONS)
 
 build:
   project: $(APPVEYOR_BUILD_FOLDER)\$(APPVEYOR_PROJECT_NAME).sln
 
+test:
+  - cd dist\test\$(CONFIGURATION)
+  - cbor_test.exe
