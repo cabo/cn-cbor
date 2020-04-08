@@ -1,0 +1,16 @@
+image:
+  - Visual Studio 2019
+
+platform:
+  - x64
+
+configuration:
+  - release
+  - debug
+
+before_build:
+  - cmake -G "Visual Studio 16 2019 Win64"
+
+build:
+  project: (APPVEYOR_BUILD_FOLDER)\$(APPVEYOR_PROJECT_NAME).sln
+
