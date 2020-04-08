@@ -2,6 +2,25 @@
 
 # cn-cbor: A constrained node implementation of CBOR in C
 
+Below is the original README for cn-cbor, a Proof of Concept
+implementation of [CBOR](https://cbor.io) that I wrote in 2013.
+People have been sending me fixes and updates to make this
+implementation more useful for actual use, and for a while I have
+occasionally integrated them.  Jim Schaad now is so far ahead of this
+repo that you are most likely better off using [his
+repo](https://github.com/jimsch/cn-cbor) as your upstream.
+
+If you *are* here looking for experimental CBOR implementations for
+constrained nodes, there are many, some of which are listed at
+[cbor.io](https://cbor.io/impls.html).  One more: I have recently
+[extracted](https://github.com/cabo/bm_cbor) the implementation from
+ARM-mbed's [SUIT manifest
+generator](https://github.com/ARMmbed/suit-manifest-generator) (Apache
+2.0).  SUIT implementers report (CBOR-specific) code sizes in the low
+hundreds of bytes.  Thank you, [ARM](https://github.com/bremoran).
+
+# cn-cbor: A constrained node implementation of CBOR in C
+
 This is a constrained node implementation of [CBOR](http://cbor.io) in
 C that I threw together in 2013, before the publication of
 [RFC 7049](http://tools.ietf.org/html/rfc7049), to validate certain
