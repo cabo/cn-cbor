@@ -419,6 +419,28 @@ CTEST(cbor, array)
     cn_cbor_array_append(a, cn_cbor_string_create("five", CONTEXT_NULL_COMMA &err), &err);
     ASSERT_TRUE(err.err == CN_CBOR_NO_ERROR);
     ASSERT_EQUAL(a->length, 2);
+
+    cn_cbor_array_append(a, cn_cbor_string_create("six", CONTEXT_NULL_COMMA &err), &err);
+    ASSERT_TRUE(err.err == CN_CBOR_NO_ERROR);
+    ASSERT_EQUAL(a->length, 3);
+
+    cn_cbor *e = cn_cbor_index(a, 1);
+    ASSERT_NOT_NULL(e);
+    cn_cbor_array_remove(a, e, &err);
+    ASSERT_TRUE(err.err == CN_CBOR_NO_ERROR);
+    ASSERT_EQUAL(a->length, 2);
+
+    e = cn_cbor_index(a, 1);
+    ASSERT_NOT_NULL(e);
+    cn_cbor_array_remove(a, e, &err);
+    ASSERT_TRUE(err.err == CN_CBOR_NO_ERROR);
+    ASSERT_EQUAL(a->length, 1);
+
+    e = cn_cbor_index(a, 0);
+    ASSERT_NOT_NULL(e);
+    cn_cbor_array_remove(a, e, &err);
+    ASSERT_TRUE(err.err == CN_CBOR_NO_ERROR);
+    ASSERT_EQUAL(a->length, 0);
 }
 
 CTEST(cbor, array_errors)
@@ -428,6 +450,11 @@ CTEST(cbor, array_errors)
     cn_cbor_array_append(NULL, ci, &err);
     ASSERT_EQUAL(err.err, CN_CBOR_ERR_INVALID_PARAMETER);
     cn_cbor_array_append(ci, NULL, &err);
+    ASSERT_EQUAL(err.err, CN_CBOR_ERR_INVALID_PARAMETER);
+
+    cn_cbor *e = cn_cbor_string_create("six", CONTEXT_NULL_COMMA &err);
+    cn_cbor *a = cn_cbor_array_create(CONTEXT_NULL_COMMA &err);
+    cn_cbor_array_remove(a, e, &err);
     ASSERT_EQUAL(err.err, CN_CBOR_ERR_INVALID_PARAMETER);
 }
 
