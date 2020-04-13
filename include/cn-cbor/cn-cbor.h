@@ -265,10 +265,13 @@ void cn_cbor_free(cn_cbor* cb CBOR_CONTEXT);
 /**
  * Write a CBOR value and all of the child values.
  *
- * @param[in]  buf        The buffer into which to write
+ * @param[in]  buf        The buffer into which to write. May be NULL to
+ *                        determine the necessary size.
  * @param[in]  buf_offset The offset (in bytes) from the beginning of the buffer
  *                        to start writing at
- * @param[in]  buf_size   The total length (in bytes) of the buffer
+ * @param[in]  buf_size   The total length (in bytes) of the buffer. If buf is
+ *                        NULL, this is an upper limit and may be 0 to specify
+ *                        no limit.
  * @param[in]  cb         [description]
  * @return                -1 on fail, or number of bytes written
  */
