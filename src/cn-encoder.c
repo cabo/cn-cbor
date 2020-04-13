@@ -35,7 +35,7 @@ typedef struct _write_state
   ssize_t size;
 } cn_write_state;
 
-#define ensure_writable(sz) if ((ws->offset<0) || (ws->offset + (sz) >= ws->size)) { \
+#define ensure_writable(sz) if ((ws->offset<0) || (ws->size - ws->offset < (sz))) { \
   ws->offset = -1; \
   return; \
 }
@@ -302,6 +302,7 @@ ssize_t cn_cbor_encoder_write(uint8_t *buf,
 			      const cn_cbor *cb)
 {
   cn_write_state ws = { buf, buf_offset, buf_size };
+  assert(ws.size > 0);
   _visit(cb, _encoder_visitor, _encoder_breaker, &ws);
   if (ws.offset < 0) { return -1; }
   return ws.offset - buf_offset;
