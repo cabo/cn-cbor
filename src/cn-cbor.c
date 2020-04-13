@@ -263,6 +263,8 @@ cn_cbor* cn_cbor_decode(const unsigned char* buf, size_t len CBOR_CONTEXT, cn_cb
   pb.err  = CN_CBOR_NO_ERROR;
   ret = decode_item(&pb CBOR_CONTEXT_PARAM, &catcher);
   if (ret != NULL) {
+    if (errp)
+        errp->err = CN_CBOR_NO_ERROR;
     /* mark as top node */
     ret->parent = NULL;
   } else {
