@@ -16,6 +16,18 @@ extern "C" {
   (v) = CN_CALLOC_CONTEXT(); \
   if (!(v)) { if (errp) {errp->err = CN_CBOR_ERR_OUT_OF_MEMORY;} return NULL; }
 
+cn_cbor* cn_cbor_create(cn_cbor_type type
+                        CBOR_CONTEXT,
+                        cn_cbor_errback *errp)
+{
+  cn_cbor* ret;
+  INIT_CB(ret);
+
+  ret->type = type;
+
+  return ret;
+}
+
 cn_cbor* cn_cbor_map_create(CBOR_CONTEXT_COMMA cn_cbor_errback *errp)
 {
   cn_cbor* ret;
