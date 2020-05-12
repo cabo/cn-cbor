@@ -162,6 +162,8 @@ again:
     } else {
       CN_CBOR_FAIL(CN_CBOR_ERR_MT_UNDEF_FOR_INDEF);
     }
+  default:
+    break;
   }
   // process content
   switch (mt) {
@@ -222,6 +224,8 @@ again:
       break;
     default: cb->v.uint = val;
     }
+  default:
+    break;
   }
 fill:                           /* emulate loops */
   if (parent->flags & CN_CBOR_FL_INDEF) {
